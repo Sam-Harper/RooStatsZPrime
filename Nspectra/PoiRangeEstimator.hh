@@ -31,6 +31,7 @@ class PoiRangeEstimator {
 
       // constructor
       PoiRangeEstimator(ModelConfiguratorZprime* configurator, Resultator * myResultator);
+      PoiRangeEstimator(ModelConfiguratorZprime* configurator, RooDataSet * inputdata);
       // destructor
       ~PoiRangeEstimator();
 

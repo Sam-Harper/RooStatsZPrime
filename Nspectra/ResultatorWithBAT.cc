@@ -27,6 +27,7 @@
 #include "RooStats/HypoTestResult.h"
 
 #include "TCanvas.h"
+#include "TFile.h"
 
 using namespace std;
 using namespace RooFit;
@@ -34,7 +35,7 @@ using namespace RooStats;
 
 
 //--------------------Constructor
-ResultatorWithBAT::ResultatorWithBAT(ModelConfiguratorZprime* configurator, DataPruner * myDataPruner) : sublegend("WithBAT - "), Resultator(configurator, myDataPruner) {
+ResultatorWithBAT::ResultatorWithBAT(ModelConfiguratorZprime* configurator, DataPruner * myDataPruner, std::string plotfile) : sublegend("WithBAT - "), Resultator(configurator, myDataPruner, plotfile) {
    ;
 }
 
@@ -73,11 +74,11 @@ void ResultatorWithBAT::calculateMCMClimit( UInt_t mcmc_iter, UInt_t mcmc_burnin
    //       Double_t kfactor_err = GetKfactorUncertainty(peak, mode);
    // 
    //       double nsig_kappa = ws->var("nsig_kappa_dimuon")->getVal();
-   //       nsig_kappa = sqrt(nsig_kappa*nsig_kappa + kfactor_err*kfactor_err);
+   //       nsig_kappa = 1.0+sqrt((nsig_kappa-1.0)*(nsig_kappa-1.0) + kfactor_err*kfactor_err);
    //       ws->var("nsig_kappa_dimuon")->setVal(nsig_kappa);
    // 
    //       nsig_kappa = ws->var("nsig_kappa_dielectron")->getVal();
-   //       nsig_kappa = sqrt(nsig_kappa*nsig_kappa + kfactor_err*kfactor_err);
+   //       nsig_kappa = 1.0+sqrt((nsig_kappa-1.0)*(nsig_kappa-1.0) + kfactor_err*kfactor_err);
    //       ws->var("nsig_kappa_dielectron")->setVal(nsig_kappa);
    // 
    //       //ntoys = 1;
@@ -125,9 +126,10 @@ void ResultatorWithBAT::calculateMCMClimit( UInt_t mcmc_iter, UInt_t mcmc_burnin
          printMcmcUpperLimit( _configurator->getMassHypothesis(), _outfile );
       }
       else{
-         std::cout << legend << funclegend << "WARNING: automatically adjusting POI range from" << _poiUpperRange << " to " << (_poiUpperRange*2.) << std::endl;
-         _poiUpperRange = _poiUpperRange*2.;
-         toycounter--;
+//FIXME: lines below are not the solution because convergence to the right value is the problem and not the poi range
+//         std::cout << legend << funclegend << "WARNING: automatically adjusting POI range from" << _poiUpperRange << " to " << (_poiUpperRange*2.) << std::endl;
+//         _poiUpperRange = _poiUpperRange*2.;
+           toycounter--;
       }
    
       // make extra plots
@@ -220,6 +222,10 @@ MCMCInterval * ResultatorWithBAT::GetMcmcInterval(ModelConfig mc, RooDataSet * d
   }
   else std::cout << legend << funclegend << "No interval found!" << std::endl;
 
+  if(_plotfile != ""){
+    TFile* outfile = new TFile(_plotfile.c_str(),"RECREATE");
+    outfile->WriteTObject(batcalc->GetPosteriorPlot1D());
+  }
 
   batcalc->CleanCalculatorForNewData();
   delete batcalc; //COMMENT: keep an eye on this

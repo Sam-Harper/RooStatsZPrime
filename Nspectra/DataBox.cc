@@ -25,6 +25,7 @@
 #include "RooStats/LikelihoodInterval.h"
 #include "RooStats/LikelihoodIntervalPlot.h"
 #include "RooStats/HypoTestResult.h"
+#include "RooRandom.h"
 
 using namespace std;
 using namespace RooFit;
@@ -43,6 +44,7 @@ DataBox::DataBox(ModelConfiguratorZprime* configurator, DataPruner * myDataPrune
    SetNeventsData();
 
    _myrandgen = new TRandom3(0);
+   RooRandom::randomGenerator()->SetSeed(0); //otherwise we will get the same pseudo experiments in all jobs
 }
 
 DataBox::~DataBox() {

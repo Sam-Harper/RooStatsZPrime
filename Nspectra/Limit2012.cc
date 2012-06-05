@@ -11,9 +11,11 @@
 #include "Resultator.hh"
 #include "PoiRangeEstimator.hh"
 #include "DataPruner.hh"
+//#include <libconfig.hh>
 
 using namespace RooFit;
 using namespace std;
+
 
 int main(int argc, char* argv[]) {
 
@@ -23,6 +25,8 @@ int main(int argc, char* argv[]) {
    bool run_channel2 = true;
    bool run_channel3 = true;
    bool run_channel4 = true;
+   bool writeplots = true;
+   bool datapruning = true;
 
    double Zprimemass = static_cast<double>(atof(argv[5]));
    unsigned int ntoys  = atoi(argv[6]);
@@ -31,6 +35,20 @@ int main(int argc, char* argv[]) {
    string filesuffix = argv[8];
    string mode = argv[9];
    string workspacedir = argv[10];
+
+   int help_bool = atoi(argv[11]);
+   if(help_bool == 0){
+      writeplots = false;
+   }
+   std::string plotfile = "";
+   if(writeplots){
+      plotfile = plotfile + "plots_" + filesuffix + ".root";
+   }
+
+   help_bool = atoi(argv[12]);
+   if(help_bool == 0){
+      datapruning = false;
+   }
 
    int help_run_channel = atoi(argv[1]);
    if(help_run_channel == 0){
@@ -63,7 +81,7 @@ int main(int argc, char* argv[]) {
 
 
 
-cout << "do some testing ..." << endl;
+cout << "calculate some limits ..." << endl;
 
 std::map<string, RooWorkspace*> WSvec; // maps channel names to workspaces
 
@@ -87,7 +105,7 @@ WSvec.insert( pair<string, RooWorkspace *>(channelname1, ws1) ); // insert chann
 
 // CHANNEL: dimuon2012
 
-const std::string filename3 = workspacedir + "/ws_dimuon_ratio_full2011v1.root"; // the root file containing the workspace
+const std::string filename3 = workspacedir + "/ws_dimuon_ratio_prelim_2012.root"; // the root file containing the workspace
 const std::string ws_name3 = "myWS"; // the name of the workspace TObject to be used
 const std::string channelname3 = "dimuon2012"; // name of the channel -> to be used in your daugther class of ModelConfigurator
 TFile file3(filename3.c_str(), "read"); // construct TFile object to load the workspace
@@ -119,7 +137,7 @@ WSvec.insert( pair<string, RooWorkspace *>(channelname2, ws2) ); // insert chann
 
 // CHANNEL: dielectron2012
 
-const std::string filename4 = workspacedir + "/ws_dielectron_ratio_full2011v1.root"; // the root file containing the workspace
+const std::string filename4 = workspacedir + "/ws_dielectron_ratio_prelim_2012.root"; // the root file containing the workspace
 const std::string ws_name4 = "myWS"; // the name of the workspace TObject to be used
 const std::string channelname4 = "dielectron2012"; // name of the channel -> to be used in your daugther class of ModelConfigurator
 TFile file4(filename4.c_str(), "read"); // construct TFile object to load the workspace
@@ -223,21 +241,28 @@ myConfigurator->setMassHypothesis(Zprimemass);
 
 //Setup DataPruner
 std::map<std::string , double> Rangemap;
-if(run_channel1){ Rangemap.insert( pair<std::string, double>("dimuon2011", 350.) );}
-if(run_channel2){ Rangemap.insert( pair<std::string, double>("dielectron2011", 350.) );}
-//if(run_channel3){ Rangemap.insert( pair<std::string, double>("dimuon2012", 350.) );}
-//if(run_channel4){ Rangemap.insert( pair<std::string, double>("dielectron2012", 350.) );}
+
+if(datapruning){
+   if(run_channel1){ Rangemap.insert( pair<std::string, double>("dimuon2011", 200.) );}
+   if(run_channel2){ Rangemap.insert( pair<std::string, double>("dielectron2011", 200.) );}
+   if(run_channel3){ Rangemap.insert( pair<std::string, double>("dimuon2012", 200.) );}
+   if(run_channel4){ Rangemap.insert( pair<std::string, double>("dielectron2012", 200.) );}
+}
+
 DataPruner * mydatapruner = new DataPruner(Rangemap);
 
-//For testing: adjust some other parameters: nbkg_dielectron2011, nbkg_dimuon2011
-//myConfigurator->setVar("peak",1000);
-myConfigurator->setVar("nbkg_est_dielectron2011",458);
-myConfigurator->setVar("nbkg_est_dimuon2011",570);
-myConfigurator->setVarRange("mass", 350., 2000.);
+if(datapruning){
+   //For testing: adjust some other parameters: nbkg_dielectron2011, nbkg_dimuon2011
+   //myConfigurator->setVar("peak",1000);
+   //myConfigurator->setVar("nbkg_est_dielectron2011",458);
+   //myConfigurator->setVar("nbkg_est_dimuon2011",570);
+   //myConfigurator->setVarRange("mass", 350., 2000.);
+   myConfigurator->setVarRange("mass", 200., 3000.);
+}
 
 // RUN Bayesian limits
 
-Resultator * myResultator = new Resultator(myConfigurator, mydatapruner);
+Resultator * myResultator = new Resultator(myConfigurator, mydatapruner, plotfile);
 myResultator->setNbinsPosterior(200);
 
 //Estimate reasonable POI range
@@ -245,10 +270,10 @@ PoiRangeEstimator * myPoiRangeEstimator = new PoiRangeEstimator(myConfigurator, 
 double poiUpperLimitGuess = myPoiRangeEstimator->GetPoiUpper("multi", Zprimemass);
 cout << "estimate for reasonable upper limit of poi range: " << poiUpperLimitGuess << endl; 
 delete myPoiRangeEstimator;
-
 myResultator->SetPoiUpperLimitByHand(poiUpperLimitGuess);
+
 myResultator->calculateMCMClimit( MCMCiter, 100, ntoys, filesuffix, mode);
 
-cout << ".. did some testing" << endl;
+cout << ".. calculated some limits" << endl;
 
 }

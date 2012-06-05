@@ -30,7 +30,7 @@ class ResultatorWithBAT : public Resultator {
    public: 
 
       // constructor
-      ResultatorWithBAT(ModelConfiguratorZprime* configurator, DataPruner * myDataPruner);
+      ResultatorWithBAT(ModelConfiguratorZprime* configurator, DataPruner * myDataPruner, std::string plotfile = "");
       // destructor
       ~ResultatorWithBAT();
 

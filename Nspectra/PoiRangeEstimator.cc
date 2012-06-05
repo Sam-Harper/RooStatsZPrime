@@ -14,6 +14,9 @@
 #include <stdexcept>
 #include <limits>
 
+#include <numeric>
+#include <iterator>
+
 #include "RooStats/ProfileLikelihoodCalculator.h"
 #include "TH1F.h"
 #include "RooRealVar.h"
@@ -28,8 +31,6 @@ using namespace RooStats;
 PoiRangeEstimator::PoiRangeEstimator(ModelConfiguratorZprime* configurator, Resultator * myResultator) : legend("PoiRangeEstimator - ") {
    cout << legend << " constructed" << endl;
 
-   cout << legend << "WARNING: model is assumed to contain the channelnames dimuon2011 and dielectron2011 " << endl;
-
    _configurator = configurator;
    _myResultator = myResultator;
    _myWS = _configurator->getCombinedWS() ;
@@ -37,6 +38,18 @@ PoiRangeEstimator::PoiRangeEstimator(ModelConfiguratorZprime* configurator, Resu
 
    mpPlrInt = 0;
    data = _myResultator->getDataBox()->createObservedData();
+}
+
+PoiRangeEstimator::PoiRangeEstimator(ModelConfiguratorZprime* configurator, RooDataSet * inputdata) : legend("PoiRangeEstimator - ") {
+   cout << legend << " constructed" << endl;
+
+   _configurator = configurator;
+   _myWS = _configurator->getCombinedWS() ;
+   _myModelConfigCopy =  new ModelConfig(*(_configurator->getCombinedModelConfig())); //COMMENT: not sure why we need a copy for this, keep it for now as in twobody.C
+
+   mpPlrInt = 0;
+   _myResultator = 0; 
+   data = inputdata;
 }
 
 PoiRangeEstimator::~PoiRangeEstimator() {
@@ -61,7 +74,13 @@ Double_t PoiRangeEstimator::GetPoiUpper(std::string channel, Double_t peak){
     _range = GetPoiUpperSimple(channel, peak);
   }
   else if (channel.find("multi")!=std::string::npos){
-    _range = std::max(GetPoiUpperSimple("dimuon2011", peak), GetPoiUpperSimple("dielectron2011", peak)); //FIXME: generalize to maximum of all channels
+   std::vector<double> rangevec;
+   std::vector<std::string> channelnamevec = _configurator->getChannelNames();
+   for (std::vector<std::string>::iterator vecIt = channelnamevec.begin(); vecIt != channelnamevec.end(); vecIt++){
+      rangevec.push_back(GetPoiUpperSimple(*vecIt, peak));
+   }
+    _range = *std::max_element( rangevec.begin(), rangevec.end() ); 
+
   }
   else{
     std::cout << legend << "Unknown channel "

@@ -12,6 +12,8 @@
 #include<string>
 #include<map>
 
+#include "TFile.h"
+
 #include "ModelConfiguratorZprime.hh"
 #include "DataBox.hh"
 #include "DataPruner.hh"
@@ -29,7 +31,7 @@ class Resultator {
    public: 
 
       // constructor
-      Resultator(ModelConfiguratorZprime* configurator, DataPruner * myDataPruner);
+      Resultator(ModelConfiguratorZprime* configurator, DataPruner * myDataPruner, std::string plotfile = "");
       // destructor
       ~Resultator();
 
@@ -59,6 +61,8 @@ class Resultator {
       
       void setNbinsPosterior(int nbinsPosterior){_nbinsPosterior = nbinsPosterior;};
       int getNbinsPosterior(int nbinsPosterior){return _nbinsPosterior;};
+
+      void makeMcmcPosteriorPlot( MCMCInterval * mcInt, std::string filename);
 
       Double_t calculateRatioSignificance( std::string mode,
                     Double_t mass_low,
@@ -94,6 +98,7 @@ class Resultator {
       bool _bMcmcConverged;
       int _nbinsPosterior; // number of bins for posterior histogram
       bool _makeLlrPlot; // optional plot for significance estimation procedure
+      std::string _plotfile;
       
 };
 #endif

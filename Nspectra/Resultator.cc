@@ -26,6 +26,7 @@
 #include "RooStats/HypoTestResult.h"
 
 #include "TCanvas.h"
+#include "PoiRangeEstimator.hh"
 
 using namespace std;
 using namespace RooFit;
@@ -33,7 +34,7 @@ using namespace RooStats;
 
 
 //--------------------Constructor
-Resultator::Resultator(ModelConfiguratorZprime* configurator, DataPruner * myDataPruner) : legend("Resultator - ")  {
+Resultator::Resultator(ModelConfiguratorZprime* configurator, DataPruner * myDataPruner, std::string plotfile) : legend("Resultator - "), _plotfile(plotfile) {
    cout << legend << " constructed" << endl;
    _configurator = configurator;
    _myDataPruner = myDataPruner;
@@ -88,11 +89,11 @@ void Resultator::calculateMCMClimit( UInt_t mcmc_iter, UInt_t mcmc_burnin, UInt_
    //       Double_t kfactor_err = GetKfactorUncertainty(peak, mode);
    // 
    //       double nsig_kappa = ws->var("nsig_kappa_dimuon")->getVal();
-   //       nsig_kappa = sqrt(nsig_kappa*nsig_kappa + kfactor_err*kfactor_err);
+   //       nsig_kappa = 1.0+sqrt((nsig_kappa-1.0)*(nsig_kappa-1.0) + kfactor_err*kfactor_err);
    //       ws->var("nsig_kappa_dimuon")->setVal(nsig_kappa);
    // 
    //       nsig_kappa = ws->var("nsig_kappa_dielectron")->getVal();
-   //       nsig_kappa = sqrt(nsig_kappa*nsig_kappa + kfactor_err*kfactor_err);
+   //       nsig_kappa = 1.0+sqrt((nsig_kappa-1.0)*(nsig_kappa-1.0) + kfactor_err*kfactor_err);
    //       ws->var("nsig_kappa_dielectron")->setVal(nsig_kappa);
    // 
    //       //ntoys = 1;
@@ -102,12 +103,6 @@ void Resultator::calculateMCMClimit( UInt_t mcmc_iter, UInt_t mcmc_burnin, UInt_
       // calculate observed ratio limit
    
    
-      // change POI range
-      //delete mpMc;
-      //mpMc = new ModelConfig(mc);
-      //mpMc->SetWorkspace(*ws);
-      //double poiUpper = GetPoiUpper("dilepton", peak);
-      //double poiUpper = _poiUpperRange;
       std::cout << legend << funclegend << "setting POI range to [0; " << _poiUpperRange << "]" << std::endl;
    
       _myWS->var("ratio")->setRange(0.0, _poiUpperRange); //FIXME variable name does not need to be hardcoded
@@ -117,32 +112,36 @@ void Resultator::calculateMCMClimit( UInt_t mcmc_iter, UInt_t mcmc_burnin, UInt_
       RooDataSet * data;
    
       if(mode.find("observed")!=std::string::npos){
-
          std::cout << legend << funclegend << "calculating an OBSERVED limit..." << std::endl;
          std::cout << legend << funclegend << "For stability reasons we calculate it " << ntoys << " times, so one can average. This is iteration " << toycounter << " of " << ntoys << std::endl;
-
          data = _databox->createObservedData();
-         _mcInt = GetMcmcInterval(*_myModelConfig, data, 0.95, mcmc_iter, mcmc_burnin, 0.0, _nbinsPosterior);
-         toycounter++; 
       }
       else{
-
          std::cout << legend << funclegend << "calculating an EXPECTED limit..." << std::endl;
          std::cout << legend << funclegend << "We calculate it for " << ntoys << " toy experiments. This is iteration " << toycounter << " of " << ntoys << std::endl;
-
          data = _databox->createToyMc();
-         _mcInt = GetMcmcInterval(*_myModelConfig, data, 0.95, mcmc_iter, mcmc_burnin, 0.0, _nbinsPosterior);
-         toycounter++; 
+         
       }
+
+      //Estimate reasonable POI range -> do this again here to cover changed data in pseudo experiments
+      PoiRangeEstimator * myPoiRangeEstimator = new PoiRangeEstimator(_configurator, data);
+      double poiUpperLimitGuess = myPoiRangeEstimator->GetPoiUpper("multi", _configurator->getMassHypothesis());
+      cout << "estimate for reasonable upper limit of poi range after data generation: " << poiUpperLimitGuess << endl; 
+      delete myPoiRangeEstimator;
+      SetPoiUpperLimitByHand(poiUpperLimitGuess*2.); // times two is of course just an ad-hoc number
+
+      _mcInt = GetMcmcInterval(*_myModelConfig, data, 0.95, mcmc_iter, mcmc_burnin, 0.0, _nbinsPosterior);
+      toycounter++; 
 
       if(_bMcmcConverged){
          std::string _outfile = "nchannels_ratio_mcmc_limit_" + suffix + ".ascii";
          printMcmcUpperLimit( _configurator->getMassHypothesis(), _outfile );
       }
       else{
-         std::cout << legend << funclegend << "WARNING: automatically adjusting POI range from" << _poiUpperRange << " to " << (_poiUpperRange*2.) << std::endl;
-         _poiUpperRange = _poiUpperRange*2.;
-         toycounter--;
+//FIXME: lines below are not the solution because convergence to the right value is the problem and not the poi range
+//         std::cout << legend << funclegend << "WARNING: automatically adjusting POI range from" << _poiUpperRange << " to " << (_poiUpperRange*2.) << std::endl;
+//         _poiUpperRange = _poiUpperRange*2.;
+           toycounter--;
       }
    
       // make extra plots
@@ -225,6 +224,10 @@ MCMCInterval * Resultator::GetMcmcInterval(ModelConfig mc, RooDataSet * data,
   // check if limit makes sense
   _bMcmcConverged = false; // default
   if (mcInt){
+    //plot posterior info if requested
+    if(_plotfile != ""){
+      makeMcmcPosteriorPlot(mcInt, _plotfile);
+    }
     RooRealVar * p_first_poi = (RooRealVar*) mc.GetParametersOfInterest()->first();
     double poi_limit = mcInt->UpperLimit(*p_first_poi);
     double u_poi_min  = p_first_poi->getMin();
@@ -430,7 +433,7 @@ Double_t Resultator::calculateRatioSignificance( std::string mode,
     delete data;
   }
   else if (mode.find("pseudo")!=std::string::npos){
-    
+
     int pe_counter = 0;
     while (pe_counter < ntoys){
       
@@ -590,7 +593,7 @@ std::pair<Double_t, Double_t> Resultator::get_pllr_max( Double_t mass_low,
   _res.second = _max_mass;
 
   // clean up
-  delete _fit;  //FIXME: creates a warning while compiling -> follow up on this
+  //delete _fit;  //COMMENT: deleting _fit crashes the code as destructor is called later from somewhere else in RooFit/RooStats
 
   return _res;
 }
@@ -633,6 +636,67 @@ Double_t Resultator::get_pllr( std::string nullParametersName, RooDataSet * data
 
   return significance;
   //return 4.0;
+}
+
+void Resultator::makeMcmcPosteriorPlot( MCMCInterval * mcInt, std::string filename){
+   std::string funclegend = " makeMcmcPosteriorPlot( MCMCInterval * mcInt, std::string filename) ";
+   cout << legend << funclegend << endl;
+
+   TFile* outfile = new TFile(_plotfile.c_str(),"RECREATE");
+
+   if (mcInt && filename.size() > 0){
+
+      TCanvas c1("c1");
+      MCMCIntervalPlot plot(*mcInt);
+      plot.Draw();
+      std::string plot_name = "posterior_" + filename;
+      c1.SetName(plot_name.c_str());
+      outfile->WriteTObject(&c1);
+
+      TCanvas c2("c2");
+      plot.DrawNLLHist();
+      plot_name = "nll_" + filename;
+      c2.SetName(plot_name.c_str());
+      outfile->WriteTObject(&c2);
+
+      std::vector<std::string> _vNames;
+      _vNames.push_back("beta_nsig_dimuon2011");
+      _vNames.push_back("beta_nbkg_dimuon2011");
+      _vNames.push_back("beta_nsig_dielectron2011");
+      _vNames.push_back("beta_nbkg_dielectron2011");
+      _vNames.push_back("beta_mass_dielectron2011");
+      _vNames.push_back("beta_nsig_dimuon2012");
+      _vNames.push_back("beta_nbkg_dimuon2012");
+      _vNames.push_back("beta_nsig_dielectron2012");
+      _vNames.push_back("beta_nbkg_dielectron2012");
+      _vNames.push_back("beta_mass_dielectron2012");
+      
+      plot_name = filename;
+
+      for (std::vector<std::string>::const_iterator _name = _vNames.begin(); _name != _vNames.end(); ++_name){
+
+         RooRealVar * _nuis = _myWS->var( _name->c_str() );
+         if (_nuis){
+            TCanvas c3("c3");
+            plot.DrawChainScatter(*_myWS->var("ratio"), *_nuis);
+            std::string _fname( _name->c_str() );
+            _fname += "_vs_poi_"+plot_name;
+            c3.SetName(_fname.c_str());
+            outfile->WriteTObject(&c3);
+         }
+      }
+
+      // test scatter
+      //TCanvas c2("c2");
+      //plot.DrawChainScatter(*ws->var("ratio"),*ws->var("beta_nsig_dielectron"));
+      //c2.SaveAs("scatter_mcmc_e.png");
+      // 
+      //TCanvas c3("c3");
+      //plot.DrawChainScatter(*ws->var("ratio"),*ws->var("beta_nsig_dimuon"));
+      //c3.SaveAs("scatter_mcmc_mu.png");
+   }
+   outfile->Close();
+   return;
 }
 
 

@@ -32,6 +32,15 @@ int main(int argc, char* argv[]) {
    string mode = argv[9];
    string workspacedir = argv[10];
 
+   int help_bool = atoi(argv[11]);
+   if(help_bool == 0){
+      writeplots = false;
+   }
+   std::string plotfile = "";
+   if(writeplots){
+      plotfile = plotfile + "plots_" + filesuffix + ".root"
+   }
+
    int help_run_channel = atoi(argv[1]);
    if(help_run_channel == 0){
       run_channel1 = false;
@@ -236,7 +245,7 @@ DataPruner * mydatapruner = new DataPruner(Rangemap);
 
 // RUN Bayesian limits
 
-ResultatorWithBAT * myResultator = new ResultatorWithBAT(myConfigurator, mydatapruner);
+ResultatorWithBAT * myResultator = new ResultatorWithBAT(myConfigurator, mydatapruner, plotfile);
 myResultator->setNbinsPosterior(200);
 
 //Estimate reasonable POI range

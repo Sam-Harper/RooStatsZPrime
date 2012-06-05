@@ -24,6 +24,7 @@ int main(int argc, char* argv[]) {
    bool run_channel2 = true;
    bool run_channel3 = true;
    bool run_channel4 = true;
+   bool datapruning = true;
 
    double mass_low = static_cast<double>(atof(argv[5]));
    double mass_high = static_cast<double>(atof(argv[6]));
@@ -36,6 +37,11 @@ int main(int argc, char* argv[]) {
    string filesuffix = argv[12];
    string mode = argv[13];
    string workspacedir = argv[14];
+
+   int help_bool = atoi(argv[15]);
+   if(help_bool == 0){
+      datapruning = false;
+   }
 
    int help_run_channel = atoi(argv[1]);
    if(help_run_channel == 0){
@@ -124,7 +130,7 @@ WSvec.insert( pair<string, RooWorkspace *>(channelname2, ws2) ); // insert chann
 
 // CHANNEL: dielectron2012
 
-const std::string filename4 = workspacedir + "/ws_dielectron_ratio_full2011v1.root"; // the root file containing the workspace
+const std::string filename4 = workspacedir + "/ws_dielectron_ratio_prelim_2012.root"; // the root file containing the workspace
 const std::string ws_name4 = "myWS"; // the name of the workspace TObject to be used
 const std::string channelname4 = "dielectron2012"; // name of the channel -> to be used in your daugther class of ModelConfigurator
 TFile file4(filename4.c_str(), "read"); // construct TFile object to load the workspace
@@ -226,14 +232,16 @@ myConfigurator->Setup();
 
 //Setup DataPruner
 std::map<std::string , double> Rangemap;
-if(run_channel1){ Rangemap.insert( pair<std::string, double>("dimuon2011", 400.) );}
-if(run_channel2){ Rangemap.insert( pair<std::string, double>("dielectron2011", 400.) );}
-if(run_channel3){ Rangemap.insert( pair<std::string, double>("dimuon2012", 400.) );}
-if(run_channel4){ Rangemap.insert( pair<std::string, double>("dielectron2012", 400.) );}
+if( datapruning){
+   if(run_channel1){ Rangemap.insert( pair<std::string, double>("dimuon2011", 400.) );}
+   if(run_channel2){ Rangemap.insert( pair<std::string, double>("dielectron2011", 400.) );}
+   if(run_channel3){ Rangemap.insert( pair<std::string, double>("dimuon2012", 400.) );}
+   if(run_channel4){ Rangemap.insert( pair<std::string, double>("dielectron2012", 400.) );}
+}
+
 DataPruner * mydatapruner = new DataPruner(Rangemap);
 
 // RUN Significance results
-
 Resultator * myResultator = new Resultator(myConfigurator,mydatapruner);
 myResultator->calculateRatioSignificance( mode, mass_low, mass_high, mass_step, ntoys, filesuffix, fit_range_low, fit_range_high, width_factor, false) ;
 
