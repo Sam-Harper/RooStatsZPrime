@@ -14,7 +14,6 @@
 #include <stdexcept>
 #include <limits>
 
-#include "RooStats/SimpleInterval.h"
 #include "RooStats/BayesianCalculator.h"
 #include "RooStats/MCMCCalculator.h"
 #include "BAT/BATCalculator.h"
@@ -176,24 +175,26 @@ MCMCInterval * ResultatorWithBAT::GetMcmcInterval(ModelConfig mc, RooDataSet * d
       cout << "fixing ConfidenceLevel" << endl;
       // fix amount of posterior probability in the calculated interval.
       // FIXME: C.L. hardcoded (use conf_level argument of the function)
-      batcalc->SetConfidenceLevel(0.90);
+      batcalc->SetLeftSideTailFraction(0.0); 
+      batcalc->SetConfidenceLevel(0.95); 
       // fix number of Markov chain elements. (in general: the longer the Markov chain the more 
       // precise will be the results)
       batcalc->SetnMCMC(n_iter);
 
-      batcalc->SetNumBins("ratio", 200);
+      batcalc->SetNumBins("ratio", n_bins);
 
       // retrieve SimpleInterval object containing the information about the interval (this 
       // triggers the actual calculations)
 //      cout << "constructing interval object ..." << endl;
-//      SimpleInterval * interval = batcalc->GetInterval1D();
-//      double LowerLim = interval->LowerLimit();
-//      double UpperLim = interval->UpperLimit();
+      interval = batcalc->GetInterval1Dv2("ratio");
+      double LowerLim = interval->LowerLimit();
+      double UpperLim = interval->UpperLimit();
 
-//      std::cout << "BATCalculator: 90% CL interval: [ " << LowerLim << " - " << UpperLim << " ] or 95% CL upper limit\n";
-
+      std::cout << "BATCalculator: 90% CL interval: [ " << LowerLim << " - " << UpperLim << " ] or 95% CL upper limit\n";
 
       mcInt = batcalc->GetInterval();
+      mcInt->SetLeftSideTailFraction(0.0);
+      mcInt->SetConfidenceLevel(0.95);
 
 
   cout << "test 4" << endl;
@@ -201,6 +202,10 @@ MCMCInterval * ResultatorWithBAT::GetMcmcInterval(ModelConfig mc, RooDataSet * d
   // check if limit makes sense
   _bMcmcConverged = false; // default
   if (mcInt){
+    //plot posterior info if requested
+    if(_plotfile != ""){
+      makeMcmcPosteriorPlot(mcInt, _plotfile);
+    }
     RooRealVar * p_first_poi = (RooRealVar*) mc.GetParametersOfInterest()->first();
     double poi_limit = mcInt->UpperLimit(*p_first_poi);
     double u_poi_min  = p_first_poi->getMin();
@@ -222,13 +227,13 @@ MCMCInterval * ResultatorWithBAT::GetMcmcInterval(ModelConfig mc, RooDataSet * d
   }
   else std::cout << legend << funclegend << "No interval found!" << std::endl;
 
-  if(_plotfile != ""){
-    TFile* outfile = new TFile(_plotfile.c_str(),"RECREATE");
-    outfile->WriteTObject(batcalc->GetPosteriorPlot1D());
-  }
+  //if(_plotfile != ""){
+    //TFile* outfile = new TFile(_plotfile.c_str(),"RECREATE");
+    //outfile->WriteTObject(batcalc->GetPosteriorPlot1D());
+  //}
 
   batcalc->CleanCalculatorForNewData();
-  delete batcalc; //COMMENT: keep an eye on this
+  // delete batcalc; //COMMENT: keep an eye on this
   
   return mcInt;
 
@@ -247,7 +252,7 @@ double ResultatorWithBAT::printMcmcUpperLimit( double peak, std::string filename
 
   if (_mcInt){
     RooRealVar * firstPOI = (RooRealVar*) (*_myModelConfig).GetParametersOfInterest()->first();
-    _limit = _mcInt->UpperLimit(*firstPOI);
+    _limit = interval->UpperLimit();
     std::cout << "\n95% upper limit on " << firstPOI->GetName() << " is : " <<
       _limit << endl;
     

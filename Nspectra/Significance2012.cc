@@ -98,7 +98,7 @@ WSvec.insert( pair<string, RooWorkspace *>(channelname1, ws1) ); // insert chann
 
 // CHANNEL: dimuon2012
 
-const std::string filename3 = workspacedir + "/ws_dimuon_ratio_full2011v1.root"; // the root file containing the workspace
+const std::string filename3 = workspacedir + "/ws_dimuon_ratio_prelim_2012.root"; // the root file containing the workspace
 const std::string ws_name3 = "myWS"; // the name of the workspace TObject to be used
 const std::string channelname3 = "dimuon2012"; // name of the channel -> to be used in your daugther class of ModelConfigurator
 TFile file3(filename3.c_str(), "read"); // construct TFile object to load the workspace

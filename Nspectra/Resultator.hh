@@ -84,6 +84,8 @@ class Resultator {
       Double_t get_pllr( std::string nullParametersName, RooDataSet * data );
 
       DataBox * getDataBox() { return _databox;};
+      double getPoiRangefactor() { return _poirangefactor;};
+      void setPoiRangeFactor(double poirangefactor) { _poirangefactor = poirangefactor;};
 
    protected:
 
@@ -99,6 +101,7 @@ class Resultator {
       int _nbinsPosterior; // number of bins for posterior histogram
       bool _makeLlrPlot; // optional plot for significance estimation procedure
       std::string _plotfile;
+      double _poirangefactor;
       
 };
 #endif

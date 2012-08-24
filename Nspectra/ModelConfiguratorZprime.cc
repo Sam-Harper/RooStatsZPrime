@@ -140,6 +140,7 @@ void ModelConfiguratorZprime::Setup_ModelConfig() {
    for( std::map<std::string, std::vector<std::string> >::iterator mapIt = _nuisanceStringMap.begin(); mapIt != _nuisanceStringMap.end(); mapIt++){
       for(std::vector<std::string>::iterator vecIt = ((*mapIt).second).begin(); vecIt != ((*mapIt).second).end(); vecIt++){
          cout << legend << sublegend << funclegend << " add nuisance parameter: " << (*vecIt).c_str() << endl;
+         cout << legend << sublegend << funclegend << "nuisance parameter " << (*vecIt).c_str() << " has name " << _CombinedWS->var( (*vecIt).c_str() )->GetName() << " and title " << _CombinedWS->var( (*vecIt).c_str() )->GetTitle() << endl;
          sNuis.add( *(_CombinedWS->var( (*vecIt).c_str() )) );
       }
    }

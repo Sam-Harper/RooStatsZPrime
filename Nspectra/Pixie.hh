@@ -11,7 +11,7 @@
 #include<vector>
 #include<string>
 #include<map>
-
+#include "RooWorkspace.h"
 
 using namespace std;
 
@@ -25,7 +25,9 @@ class Pixie {
 
       std::vector<std::string> commaSepStringToStringVec(std::string commaSepString);
       std::vector<std::string> commaSepStringToStringForRooArgSet(std::string channelname, std::string commaSepString, std::vector<std::string> sharedVars);
-
+      void SetupFor7and8Combination(RooWorkspace * ws, std::string channelname);
+      void SetupFor7and8Combination_RS(RooWorkspace * ws, std::string channelname);
+      void SetResolution_RS(RooWorkspace * ws, double kdivMplred, std::vector<std::string> channelnames);
  
    private:
 

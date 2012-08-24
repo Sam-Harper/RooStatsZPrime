@@ -11,9 +11,12 @@
 #include "ResultatorWithBAT.hh"
 #include "PoiRangeEstimator.hh"
 #include "DataPruner.hh"
+#include "Pixie.hh"
+//#include <libconfig.hh>
 
 using namespace RooFit;
 using namespace std;
+
 
 int main(int argc, char* argv[]) {
 
@@ -23,6 +26,9 @@ int main(int argc, char* argv[]) {
    bool run_channel2 = true;
    bool run_channel3 = true;
    bool run_channel4 = true;
+   bool writeplots = true;
+   bool datapruning = true;
+   bool usemassscaleuncer = true;
 
    double Zprimemass = static_cast<double>(atof(argv[5]));
    unsigned int ntoys  = atoi(argv[6]);
@@ -38,7 +44,19 @@ int main(int argc, char* argv[]) {
    }
    std::string plotfile = "";
    if(writeplots){
-      plotfile = plotfile + "plots_" + filesuffix + ".root"
+      plotfile = plotfile + "plots_" + filesuffix + ".root";
+   }
+
+   help_bool = atoi(argv[12]);
+   if(help_bool == 0){
+      datapruning = false;
+   }
+
+   double poiRangeFactor = static_cast<double>(atof(argv[13]));
+
+   help_bool = atoi(argv[14]);
+   if(help_bool == 0){
+      usemassscaleuncer = false;
    }
 
    int help_run_channel = atoi(argv[1]);
@@ -72,7 +90,7 @@ int main(int argc, char* argv[]) {
 
 
 
-cout << "do some testing ..." << endl;
+cout << "calculate some limits ..." << endl;
 
 std::map<string, RooWorkspace*> WSvec; // maps channel names to workspaces
 
@@ -96,7 +114,7 @@ WSvec.insert( pair<string, RooWorkspace *>(channelname1, ws1) ); // insert chann
 
 // CHANNEL: dimuon2012
 
-const std::string filename3 = workspacedir + "/ws_dimuon_ratio_full2011v1.root"; // the root file containing the workspace
+const std::string filename3 = workspacedir + "/ws_dimuon_ratio_prelim_2012.root"; // the root file containing the workspace
 const std::string ws_name3 = "myWS"; // the name of the workspace TObject to be used
 const std::string channelname3 = "dimuon2012"; // name of the channel -> to be used in your daugther class of ModelConfigurator
 TFile file3(filename3.c_str(), "read"); // construct TFile object to load the workspace
@@ -128,7 +146,7 @@ WSvec.insert( pair<string, RooWorkspace *>(channelname2, ws2) ); // insert chann
 
 // CHANNEL: dielectron2012
 
-const std::string filename4 = workspacedir + "/ws_dielectron_ratio_full2011v1.root"; // the root file containing the workspace
+const std::string filename4 = workspacedir + "/ws_dielectron_ratio_prelim_2012.root"; // the root file containing the workspace
 const std::string ws_name4 = "myWS"; // the name of the workspace TObject to be used
 const std::string channelname4 = "dielectron2012"; // name of the channel -> to be used in your daugther class of ModelConfigurator
 TFile file4(filename4.c_str(), "read"); // construct TFile object to load the workspace
@@ -196,7 +214,13 @@ myConfigurator->setObservables(channelname3, ObservableParamsString_channel3);
 
 if(run_channel2){
 
-string nuisanceParamsString_channel2 = "beta_nsig,beta_nbkg,beta_mass";
+string nuisanceParamsString_channel2 = "";
+if (usemassscaleuncer){
+nuisanceParamsString_channel2 = "beta_nsig,beta_nbkg,beta_mass";
+}
+else{
+nuisanceParamsString_channel2 = "beta_nsig,beta_nbkg";
+}
 string GlobalObsParamsString_channel2 = "glob_nsig,glob_nbkg,glob_mass";
 string ObservableParamsString_channel2 = "mass";
 
@@ -210,7 +234,13 @@ myConfigurator->setObservables(channelname2, ObservableParamsString_channel2);
 
 if(run_channel4){
 
-string nuisanceParamsString_channel4 = "beta_nsig,beta_nbkg,beta_mass";
+string nuisanceParamsString_channel4 = "";
+if (usemassscaleuncer){
+nuisanceParamsString_channel4 = "beta_nsig,beta_nbkg,beta_mass";
+}
+else{
+nuisanceParamsString_channel4 = "beta_nsig,beta_nbkg";
+}
 string GlobalObsParamsString_channel4 = "glob_nsig,glob_nbkg,glob_mass";
 string ObservableParamsString_channel4 = "mass";
 
@@ -228,35 +258,84 @@ myConfigurator->setMassHypothesis(Zprimemass);
 
 //safe combined WS
 
-//myConfigurator->WriteCombinedWS("CombinedWS2011x2.root");
+//myConfigurator->WriteCombinedWS("CombinedWS.root");
+
+// ADJUST WORKSPACE FOR 7/8 TeV Combination
+
+Pixie * myPixie = new Pixie();
+
+if( (run_channel3 || run_channel4 ) && (run_channel1 || run_channel2) ){
+   if (run_channel1){
+      myPixie->SetupFor7and8Combination(myConfigurator->getCombinedWS(),"dimuon2011");
+   }
+   if (run_channel2){
+      myPixie->SetupFor7and8Combination(myConfigurator->getCombinedWS(),"dielectron2011");
+   }
+}
 
 //Setup DataPruner
 std::map<std::string , double> Rangemap;
-//if(run_channel1){ Rangemap.insert( pair<std::string, double>("dimuon2011", 350.) );}
-//if(run_channel2){ Rangemap.insert( pair<std::string, double>("dielectron2011", 350.) );}
-//if(run_channel3){ Rangemap.insert( pair<std::string, double>("dimuon2012", 350.) );}
-//if(run_channel4){ Rangemap.insert( pair<std::string, double>("dielectron2012", 350.) );}
+
+if(datapruning){
+   if(run_channel1){ Rangemap.insert( pair<std::string, double>("dimuon2011", 200.) );}
+   if(run_channel2){ Rangemap.insert( pair<std::string, double>("dielectron2011", 200.) );}
+   if(run_channel3){ Rangemap.insert( pair<std::string, double>("dimuon2012", 200.) );}
+   if(run_channel4){ Rangemap.insert( pair<std::string, double>("dielectron2012", 200.) );}
+}
+
 DataPruner * mydatapruner = new DataPruner(Rangemap);
 
-//For testing: adjust some other parameters: nbkg_dielectron2011, nbkg_dimuon2011
-//myConfigurator->setVar("nbkg_est_dielectron2011",458);
-//myConfigurator->setVar("nbkg_est_dimuon2011",570);
-//myConfigurator->setVarRange("mass", 350., 2000.);
+if(datapruning){
+   //For testing: adjust some other parameters: nbkg_dielectron2011, nbkg_dimuon2011
+   //myConfigurator->setVar("peak",1000);
+   //myConfigurator->setVar("nbkg_est_dielectron2011",458);
+   //myConfigurator->setVar("nbkg_est_dimuon2011",570);
+   //myConfigurator->setVarRange("mass", 350., 2000.);
+   myConfigurator->setVarRange("mass", 200., 3000.);
+}
+
+//some settings for tests
+// myConfigurator->setVarRange("beta_nsig_dielectron2012", -3.5, 3.5);
+// myConfigurator->setVarRange("beta_nbkg_dielectron2012", -3.5, 3.5);
+// myConfigurator->setVarRange("beta_mass_dielectron2012", -3.5, 3.5);
+// myConfigurator->setVarRange("beta_nsig_dielectron2011", -3.5, 3.5);
+// myConfigurator->setVarRange("beta_nbkg_dielectron2011", -3.5, 3.5);
+// myConfigurator->setVarRange("beta_mass_dielectron2011", -0.67, -0.63);
+// myConfigurator->setVar("beta_mass_dielectron2011",-0.65);
+// myConfigurator->setVarRange("glob_mass_dielectron2011", -0.0001, 0.0001);
+// myConfigurator->setVar("glob_mass_dielectron2011",0.0);
+// myConfigurator->setVarRange("glob_mass_dielectron2012", -0.0001, 0.0001);
+// myConfigurator->setVar("glob_mass_dielectron2012",0.0);
+
+
+//just removing the uncertainties from the list of nuisance parameters does not switch off their variation in the Markov Chain (probaly because the prior term is included as a part of the likelihood)
+if (!usemassscaleuncer){
+   cout << "mass scale uncertainties are not applied!" << endl;
+   if(run_channel2){
+      myConfigurator->setVarRange("beta_mass_dielectron2011", -0.001, 0.001);
+      myConfigurator->setVar("beta_mass_dielectron2011", 0.0);
+   }
+   if(run_channel4){
+      myConfigurator->setVarRange("beta_mass_dielectron2012", -0.001, 0.001);
+      myConfigurator->setVar("beta_mass_dielectron2012", 0.0);
+   }
+}
 
 // RUN Bayesian limits
 
 ResultatorWithBAT * myResultator = new ResultatorWithBAT(myConfigurator, mydatapruner, plotfile);
-myResultator->setNbinsPosterior(200);
+myResultator->setNbinsPosterior(300);
 
 //Estimate reasonable POI range
 PoiRangeEstimator * myPoiRangeEstimator = new PoiRangeEstimator(myConfigurator, myResultator);
 double poiUpperLimitGuess = myPoiRangeEstimator->GetPoiUpper("multi", Zprimemass);
 cout << "estimate for reasonable upper limit of poi range: " << poiUpperLimitGuess << endl; 
 delete myPoiRangeEstimator;
-
-myResultator->SetPoiUpperLimitByHand(poiUpperLimitGuess);
+myResultator->SetPoiUpperLimitByHand(poiUpperLimitGuess*poiRangeFactor);
+myResultator->setPoiRangeFactor( poiRangeFactor);
+//myResultator->SetPoiUpperLimitByHand(0.09); //this line is just for testing
 myResultator->calculateMCMClimit( MCMCiter, 100, ntoys, filesuffix, mode);
 
-cout << ".. did some testing" << endl;
+cout << ".. calculated some limits" << endl;
 
 }

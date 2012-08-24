@@ -46,7 +46,7 @@ Resultator::Resultator(ModelConfiguratorZprime* configurator, DataPruner * myDat
    _nbinsPosterior = 100;
 
    _makeLlrPlot = false;
-
+   _poirangefactor = 1.0;
    // study of the background normalization
    //StudyBackground();
 
@@ -128,7 +128,7 @@ void Resultator::calculateMCMClimit( UInt_t mcmc_iter, UInt_t mcmc_burnin, UInt_
       double poiUpperLimitGuess = myPoiRangeEstimator->GetPoiUpper("multi", _configurator->getMassHypothesis());
       cout << "estimate for reasonable upper limit of poi range after data generation: " << poiUpperLimitGuess << endl; 
       delete myPoiRangeEstimator;
-      SetPoiUpperLimitByHand(poiUpperLimitGuess*2.); // times two is of course just an ad-hoc number
+      SetPoiUpperLimitByHand(poiUpperLimitGuess*_poirangefactor); // times two is of course just an ad-hoc number
 
       _mcInt = GetMcmcInterval(*_myModelConfig, data, 0.95, mcmc_iter, mcmc_burnin, 0.0, _nbinsPosterior);
       toycounter++; 
@@ -502,8 +502,8 @@ std::pair<Double_t, Double_t> Resultator::get_pllr_max( Double_t mass_low,
   // If fit_plot_file_name is not "", draw fit projections, save to file
   //
 
-  std::string funclegend = " get_pllr_max(...) ";
-  cout << legend << funclegend << endl;
+  std::string funclegend = " get_pllr_max(...) " ;
+  cout << legend << funclegend << " mass_low: " << mass_low << " mass_high: " << mass_high << " mass_step: " << mass_step << std::endl;
 
   std::pair<Double_t, Double_t> _res;
 
@@ -521,6 +521,7 @@ std::pair<Double_t, Double_t> Resultator::get_pllr_max( Double_t mass_low,
     // set resonance peak position
     // CONVENTION: variable "peak" for peak position hardcoded
     _myWS->var("peak")->setVal(_p);
+    cout << legend << funclegend << " setting peak to: " << _p << endl;
 
     Double_t _pllr = get_pllr(null_parameters_name, data);
     if (_pllr > _max_pllr){
@@ -643,6 +644,7 @@ void Resultator::makeMcmcPosteriorPlot( MCMCInterval * mcInt, std::string filena
    cout << legend << funclegend << endl;
 
    TFile* outfile = new TFile(_plotfile.c_str(),"RECREATE");
+   TH1D* myhist = new TH1D("testhist","testhist",200, 0.9, 1.1); //histogram for storing information from special tests
 
    if (mcInt && filename.size() > 0){
 
@@ -660,6 +662,7 @@ void Resultator::makeMcmcPosteriorPlot( MCMCInterval * mcInt, std::string filena
       outfile->WriteTObject(&c2);
 
       std::vector<std::string> _vNames;
+      _vNames.push_back("ratio");
       _vNames.push_back("beta_nsig_dimuon2011");
       _vNames.push_back("beta_nbkg_dimuon2011");
       _vNames.push_back("beta_nsig_dielectron2011");
@@ -696,6 +699,24 @@ void Resultator::makeMcmcPosteriorPlot( MCMCInterval * mcInt, std::string filena
       //c3.SaveAs("scatter_mcmc_mu.png");
    }
    outfile->Close();
+
+   bool debugflag = false;
+   if(debugflag){
+      //dump Markov Chain
+      cout << "start: dumping Markov Chain ..." << endl;
+      cout << "mcInt->GetDimension() : " << mcInt->GetDimension() << endl;
+      const MarkovChain * mychain = mcInt->GetChain();
+      int chainlength = mychain->Size();
+      cout.precision(6);
+      for(int i = 1; i<chainlength; i++){
+            cout << "element: " << i << " NLL: " << mychain->NLL(i) << mychain->Weight(i) << endl;
+            const RooArgSet* myset = mychain->Get();
+            myset->writeToStream(cout, false);
+            double mass_scaled = TMath::Power(1.01,myset->getRealValue("beta_mass_dielectron2011"))*450.;
+            cout << "mass_scaled:" << mass_scaled << endl;
+      }
+      cout << " ... end: dumping Markov Chain" << endl;
+   }
    return;
 }
 

@@ -20,6 +20,7 @@
 #include "RooWorkspace.h"
 #include "RooStats/ModelConfig.h"
 #include "RooStats/MCMCInterval.h"
+#include "RooStats/SimpleInterval.h"
 
 using namespace RooFit;
 using namespace RooStats;
@@ -56,6 +57,7 @@ class ResultatorWithBAT : public Resultator {
    private:
 
       std::string sublegend;
+      SimpleInterval * interval;
 
 };
 #endif
