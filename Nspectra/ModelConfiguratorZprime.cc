@@ -131,7 +131,7 @@ void ModelConfiguratorZprime::Setup_ModelConfig() {
    cout << legend << sublegend << funclegend << endl;
 
 
-   _CombinedModelConfig = new ModelConfig();
+   _CombinedModelConfig = new ModelConfig("combinedModelConfig");
 
    // construct RooArgSet with the parameter of interest
    RooArgSet sPoi( *(_CombinedWS->var(_poiString.c_str())) );

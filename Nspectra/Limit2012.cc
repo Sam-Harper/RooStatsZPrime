@@ -14,11 +14,21 @@
 #include "Pixie.hh"
 //#include <libconfig.hh>
 
+#include "RooRealVar.h"
+#include "RooNumIntConfig.h"
+
 using namespace RooFit;
 using namespace std;
 
 
 int main(int argc, char* argv[]) {
+
+   RooAbsReal::defaultIntegratorConfig()->method1D().setLabel("RooAdaptiveGaussKronrodIntegrator1D");
+   RooAbsReal::defaultIntegratorConfig()->getConfigSection("RooAdaptiveGaussKronrodIntegrator1D").setCatLabel("method","61Points") ;
+   RooAbsReal::defaultIntegratorConfig()->getConfigSection("RooAdaptiveGaussKronrodIntegrator1D").setRealValue("maxSeg",1000) ;
+
+   //RooAbsReal::defaultIntegratorConfig()->setEpsAbs(1.E-14);
+   //RooAbsReal::defaultIntegratorConfig()->setEpsRel(1.E-14);
 
    //read options
 
@@ -273,27 +283,37 @@ if( (run_channel3 || run_channel4 ) && (run_channel1 || run_channel2) ){
    }
 }
 
-//Setup DataPruner
-std::map<std::string , double> Rangemap;
+//Setup DataPruner for customized lower mass thresholds
+// std::map<std::string , double> Rangemap;
+// 
+// if(datapruning){
+//    if(run_channel1){ Rangemap.insert( pair<std::string, double>("dimuon2011", 200.) );}
+//    if(run_channel2){ Rangemap.insert( pair<std::string, double>("dielectron2011", 200.) );}
+//    if(run_channel3){ Rangemap.insert( pair<std::string, double>("dimuon2012", 200.) );}
+//    if(run_channel4){ Rangemap.insert( pair<std::string, double>("dielectron2012", 200.) );}
+// }
+// 
+// DataPruner * mydatapruner = new DataPruner(Rangemap);
+// 
+// if(datapruning){
+//    //For testing: adjust some other parameters: nbkg_dielectron2011, nbkg_dimuon2011
+//    //myConfigurator->setVar("peak",1000);
+//    //myConfigurator->setVar("nbkg_est_dielectron2011",458);
+//    //myConfigurator->setVar("nbkg_est_dimuon2011",570);
+//    //myConfigurator->setVarRange("mass", 350., 2000.);
+//    myConfigurator->setVarRange("mass", 200., 3000.);
+// }
 
+//Setup DataPruner based on signal width
+DataPruner * mydatapruner;
 if(datapruning){
-   if(run_channel1){ Rangemap.insert( pair<std::string, double>("dimuon2011", 200.) );}
-   if(run_channel2){ Rangemap.insert( pair<std::string, double>("dielectron2011", 200.) );}
-   if(run_channel3){ Rangemap.insert( pair<std::string, double>("dimuon2012", 200.) );}
-   if(run_channel4){ Rangemap.insert( pair<std::string, double>("dielectron2012", 200.) );}
+   mydatapruner = new DataPruner(6.0, myConfigurator);
 }
-
-DataPruner * mydatapruner = new DataPruner(Rangemap);
-
-if(datapruning){
-   //For testing: adjust some other parameters: nbkg_dielectron2011, nbkg_dimuon2011
-   //myConfigurator->setVar("peak",1000);
-   //myConfigurator->setVar("nbkg_est_dielectron2011",458);
-   //myConfigurator->setVar("nbkg_est_dimuon2011",570);
-   //myConfigurator->setVarRange("mass", 350., 2000.);
-   myConfigurator->setVarRange("mass", 200., 3000.);
+else{
+   //default initialization that does not do any pruning
+   std::map<std::string , double> Rangemap;
+   mydatapruner = new DataPruner(Rangemap, myConfigurator);
 }
-
 //some settings for tests
 // myConfigurator->setVarRange("beta_nsig_dielectron2012", -3.5, 3.5);
 // myConfigurator->setVarRange("beta_nbkg_dielectron2012", -3.5, 3.5);
@@ -306,6 +326,10 @@ if(datapruning){
 // myConfigurator->setVar("glob_mass_dielectron2011",0.0);
 // myConfigurator->setVarRange("glob_mass_dielectron2012", -0.0001, 0.0001);
 // myConfigurator->setVar("glob_mass_dielectron2012",0.0);
+
+//adjust signal resolution for the ZPSI model
+
+myPixie->SetResolution_ZPSI(myConfigurator->getCombinedWS(), myConfigurator->getChannelNames());
 
 
 //just removing the uncertainties from the list of nuisance parameters does not switch off their variation in the Markov Chain (probaly because the prior term is included as a part of the likelihood)

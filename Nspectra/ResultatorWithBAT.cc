@@ -186,7 +186,7 @@ MCMCInterval * ResultatorWithBAT::GetMcmcInterval(ModelConfig mc, RooDataSet * d
       // retrieve SimpleInterval object containing the information about the interval (this 
       // triggers the actual calculations)
 //      cout << "constructing interval object ..." << endl;
-      interval = batcalc->GetInterval1Dv2("ratio");
+      interval = batcalc->GetInterval1D("ratio");
       double LowerLim = interval->LowerLimit();
       double UpperLim = interval->UpperLimit();
 

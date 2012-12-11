@@ -87,6 +87,9 @@ class Resultator {
       double getPoiRangefactor() { return _poirangefactor;};
       void setPoiRangeFactor(double poirangefactor) { _poirangefactor = poirangefactor;};
 
+      bool check_low_POI_edge_problem() {return _low_POI_edge_problem;};
+      bool check_high_POI_edge_problem() {return _high_POI_edge_problem;};
+
    protected:
 
       const std::string legend;
@@ -98,6 +101,8 @@ class Resultator {
       double _poiUpperRange; // upper range limit for the POI
       MCMCInterval * _mcInt; 
       bool _bMcmcConverged;
+      bool _low_POI_edge_problem;
+      bool _high_POI_edge_problem;
       int _nbinsPosterior; // number of bins for posterior histogram
       bool _makeLlrPlot; // optional plot for significance estimation procedure
       std::string _plotfile;

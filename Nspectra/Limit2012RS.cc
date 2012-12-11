@@ -12,13 +12,30 @@
 #include "PoiRangeEstimator.hh"
 #include "DataPruner.hh"
 #include "Pixie.hh"
-//#include <libconfig.hh>
+//#include <libconfig.hh
+
+#include "RooRealVar.h"
+#include "RooNumIntConfig.h"
+
+
 
 using namespace RooFit;
 using namespace std;
 
 
 int main(int argc, char* argv[]) {
+
+   //RooNumIntConfig myconfig = RooNumIntConfig();
+   //myconfig.method1D().setLabel("RooAdaptiveGaussKronrodIntegrator1D");
+
+   //RooRealVar myreal = RooRealVar();
+   //myreal.defaultIntegratorConfig();
+
+   RooAbsReal::defaultIntegratorConfig()->method1D().setLabel("RooAdaptiveGaussKronrodIntegrator1D");
+   RooAbsReal::defaultIntegratorConfig()->getConfigSection("RooAdaptiveGaussKronrodIntegrator1D").setCatLabel("method","61Points") ;
+   RooAbsReal::defaultIntegratorConfig()->getConfigSection("RooAdaptiveGaussKronrodIntegrator1D").setRealValue("maxSeg",1000) ;
+
+
 
    //read options
 
@@ -258,10 +275,6 @@ myConfigurator->Setup();
 // FIX MASS HYPOTHESIS
 myConfigurator->setMassHypothesis(Zprimemass);
 
-//safe combined WS
-
-//myConfigurator->WriteCombinedWS("CombinedWS.root");
-
 // ADJUST WORKSPACE FOR 7/8 TeV Combination
 
 Pixie * myPixie = new Pixie();
@@ -285,17 +298,16 @@ if(datapruning){
    if(run_channel4){ Rangemap.insert( pair<std::string, double>("dielectron2012", 200.) );}
 }
 
-DataPruner * mydatapruner = new DataPruner(Rangemap);
-
+//Setup DataPruner based on signal width
+DataPruner * mydatapruner;
 if(datapruning){
-   //For testing: adjust some other parameters: nbkg_dielectron2011, nbkg_dimuon2011
-   //myConfigurator->setVar("peak",1000);
-   //myConfigurator->setVar("nbkg_est_dielectron2011",458);
-   //myConfigurator->setVar("nbkg_est_dimuon2011",570);
-   //myConfigurator->setVarRange("mass", 350., 2000.);
-   myConfigurator->setVarRange("mass", 200., 3000.);
+   mydatapruner = new DataPruner(4.0, myConfigurator);
 }
-
+else{
+   //default initialization that does not do any pruning
+   std::map<std::string , double> Rangemap;
+   mydatapruner = new DataPruner(Rangemap, myConfigurator);
+}
 //some settings for tests
 // myConfigurator->setVarRange("beta_nsig_dielectron2012", -3.5, 3.5);
 // myConfigurator->setVarRange("beta_nbkg_dielectron2012", -3.5, 3.5);
@@ -329,6 +341,7 @@ if (!usemassscaleuncer){
 
 // RUN Bayesian limits
 
+
 Resultator * myResultator = new Resultator(myConfigurator, mydatapruner, plotfile);
 myResultator->setNbinsPosterior(300);
 
@@ -343,5 +356,9 @@ myResultator->setPoiRangeFactor( poiRangeFactor);
 myResultator->calculateMCMClimit( MCMCiter, 100, ntoys, filesuffix, mode);
 
 cout << ".. calculated some limits" << endl;
+
+//safe combined WS
+//myConfigurator->getCombinedWS()->import(*(myResultator->getDataBox()->createObservedData())); //FIXME: this should be safed to the workspace by default
+//myConfigurator->WriteCombinedWS("CombinedWS.root");
 
 }

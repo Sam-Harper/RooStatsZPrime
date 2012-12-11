@@ -15,7 +15,8 @@
 #include "RooWorkspace.h"
 
 using namespace std;
-
+using namespace RooFit;
+using namespace RooStats;
 
 //--------------------Constructor
 Pixie::Pixie() : legend("Pixie"){
@@ -170,25 +171,31 @@ void Pixie::SetResolution_RS(RooWorkspace * ws, double kdivMplred, std::vector<s
    double p1 = 0.;
    
    if (kdivMplred == 0.2){
+      cout << legend << funclegend << "adjust BW FWHM for k/ M_{Pl,red} = " <<  kdivMplred << endl;
       kdivMplred_ok = true;
-      p0 = 20.8;
-      p1 = 0.050;
+      p0 = 7.6;
+      p1 = 0.056;
    }
    if (kdivMplred == 0.1){
+      cout << legend << funclegend << "adjust BW FWHM for k/ M_{Pl,red} = " <<  kdivMplred << endl;
       kdivMplred_ok = true;
-      p0 = -0.45;
+      p0 = 1.04;
       p1 = 0.017;
    }
    
    if (kdivMplred == 0.05){
+      cout << legend << funclegend << "adjust BW FWHM for k/ M_{Pl,red} = " <<  kdivMplred << endl;
       kdivMplred_ok = true;
-      p0 = 0.045;
+      p0 = 0.38;
       p1 = 0.0043;
    }
    if (kdivMplred == 0.01){
+      cout << legend << funclegend << "adjust BW FWHM for k/ M_{Pl,red} = " <<  kdivMplred << endl;
       kdivMplred_ok = true;
       p0 = 0.1;
-      p1 = 0;
+      p1 = 0.0001;
+      //p0 = 0.1;
+      //p1 = 0.0000001; 
    }
 
    if(kdivMplred_ok == false){
@@ -212,4 +219,36 @@ void Pixie::SetResolution_RS(RooWorkspace * ws, double kdivMplred, std::vector<s
       cout << legend << funclegend << "set var " << p0name << " to: " << endl << ws->var(p0name.c_str())->getVal() << endl; 
       cout << legend << funclegend << "set var " << p1name << " to: " << endl << ws->var(p1name.c_str())->getVal() << endl;
    //}
+}
+
+
+//this function makes a single evaluation of the likelihood -> test for finding problems in the likelihood evaluation
+void Pixie::CheckLikelihood(RooWorkspace * ws, ModelConfig * modelconfig){
+cout << "not yet implemented ..." << endl;
+}
+
+void Pixie::SetResolution_ZPSI(RooWorkspace * ws, std::vector<std::string> channelnames){
+   std::string funclegend = "SetResolution_ZPSI(ModelConfigurator * modelconfigurator, std::vector<std::string> channelnames) - ";
+
+   double p0 = 0.;
+   double p1 = 0.;
+   cout << legend << funclegend << "adjust BW FWHM for Z_PSI "<< endl;
+
+   p0 = 0.0;
+   p1 = 0.006;
+
+   std::string p0name = "width_p0"; //Comment: unfortunately hardcoded
+   //p0name += "_";
+   //p0name += *vecIt;
+   std::string p1name = "width_p1"; //Comment: unfortunately hardcoded
+
+   cout << p0name << " is: " << ws->var(p0name.c_str())->getVal() << endl;
+   cout << p1name << " is: " << ws->var(p1name.c_str())->getVal() << endl;
+   //p1name += "_";
+   //p1name +=  *vecIt;
+
+   ws->var(p0name.c_str())->setVal(p0);
+   ws->var(p1name.c_str())->setVal(p1);
+   cout << legend << funclegend << "set var " << p0name << " to: " << endl << ws->var(p0name.c_str())->getVal() << endl; 
+   cout << legend << funclegend << "set var " << p1name << " to: " << endl << ws->var(p1name.c_str())->getVal() << endl;
 }

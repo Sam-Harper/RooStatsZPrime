@@ -26,6 +26,9 @@
 #include "RooStats/HypoTestResult.h"
 
 #include "TCanvas.h"
+#include "RooPlot.h"
+#include "RooVoigtian.h"
+#include "RooSimultaneous.h"
 #include "PoiRangeEstimator.hh"
 
 using namespace std;
@@ -42,6 +45,8 @@ Resultator::Resultator(ModelConfiguratorZprime* configurator, DataPruner * myDat
    _myWS = _configurator->getCombinedWS() ;
    _myModelConfig = _configurator->getCombinedModelConfig();
    _bMcmcConverged = false;
+   _low_POI_edge_problem = false;
+   _high_POI_edge_problem = false;
    _databox = new DataBox(configurator, myDataPruner);
    _nbinsPosterior = 100;
 
@@ -223,6 +228,8 @@ MCMCInterval * Resultator::GetMcmcInterval(ModelConfig mc, RooDataSet * data,
 
   // check if limit makes sense
   _bMcmcConverged = false; // default
+  _low_POI_edge_problem = false;
+  _high_POI_edge_problem = false;
   if (mcInt){
     //plot posterior info if requested
     if(_plotfile != ""){
@@ -230,20 +237,31 @@ MCMCInterval * Resultator::GetMcmcInterval(ModelConfig mc, RooDataSet * data,
     }
     RooRealVar * p_first_poi = (RooRealVar*) mc.GetParametersOfInterest()->first();
     double poi_limit = mcInt->UpperLimit(*p_first_poi);
-    double u_poi_min  = p_first_poi->getMin();
-    double u_poi_max  = p_first_poi->getMax();
-    double u_poi_gap = (u_poi_max-poi_limit)/(u_poi_max-u_poi_min);
+    double poi_min  = p_first_poi->getMin();
+    double poi_max  = p_first_poi->getMax();
+    double u_poi_gap = (poi_max - poi_limit)/(poi_max - poi_min);
+    double l_poi_gap = (poi_limit - poi_min)/(poi_max - poi_min);
     std::cout << legend << "POI upper limit: " << poi_limit << std::endl;
-    std::cout << legend << "POI range: [" << u_poi_min << ", " << u_poi_max << "]" << std::endl;
+    std::cout << legend << "POI range: [" << poi_min << ", " << poi_max << "]" << std::endl;
     std::cout << legend << "POI upper gap (fraction of range): " << u_poi_gap << std::endl;
+    std::cout << legend << "POI lower gap (fraction of range): " << l_poi_gap << std::endl;
     if (u_poi_gap<0.2){
       std::cout << legend << funclegend
       << "POI limit too close to the upper boundary, MCMC probably failed!!!" << std::endl;
       std::cout << legend << funclegend
-      << "returning interval and setting fail flag" << std::endl;
+      << "returning interval and setting fail flags" << std::endl;
       _bMcmcConverged = false;
+      _high_POI_edge_problem = true;
     }
-    else{
+    else if (l_poi_gap<0.1){
+      std::cout << legend << funclegend
+      << "POI limit too close to the lower boundary, MCMC probably failed!!!" << std::endl;
+      std::cout << legend << funclegend
+      << "returning interval and setting fail flags" << std::endl;
+      _bMcmcConverged = false;
+        _low_POI_edge_problem = false;
+    }
+    else {
       _bMcmcConverged = true;
     }
   }
@@ -644,7 +662,72 @@ void Resultator::makeMcmcPosteriorPlot( MCMCInterval * mcInt, std::string filena
    cout << legend << funclegend << endl;
 
    TFile* outfile = new TFile(_plotfile.c_str(),"RECREATE");
+   //outfile->cd();
    TH1D* myhist = new TH1D("testhist","testhist",200, 0.9, 1.1); //histogram for storing information from special tests
+
+   std::string p0name = "width_p0"; //Comment: unfortunately hardcoded
+   //p0name += "_";
+   //p0name += *vecIt;
+   std::string p1name = "width_p1"; //Comment: unfortunately hardcoded
+
+   cout << p0name << " is: " << _myWS->var(p0name.c_str())->getVal() << endl;
+   cout << p1name << " is: " << _myWS->var(p1name.c_str())->getVal() << endl;
+
+   cout << "Hei-ho 1" << endl;
+   //make plot of RooVoigtian
+   RooVoigtian * myVoigt = static_cast<RooVoigtian *>(_myWS->pdf("sigpdf_dimuon2012"));
+   RooRealVar * mymass = static_cast<RooRealVar *>(_myWS->var("mass"));
+   RooArgSet * mySet = new RooArgSet(*mymass);
+   RooArgSet * mySet2 = new RooArgSet(*mymass);
+   RooRealVar * my_beta_nsig_dimuon2012 = static_cast<RooRealVar *>(_myWS->var("beta_nsig_dimuon2012"));
+   RooRealVar * my_beta_nbkg_dimuon2012 = static_cast<RooRealVar *>(_myWS->var("beta_nbkg_dimuon2012"));
+   mySet2->add(*my_beta_nsig_dimuon2012);
+   mySet2->add(*my_beta_nbkg_dimuon2012);
+   cout << "signal shape is normalized to: " << myVoigt->getNorm(mySet) << endl;
+
+   RooRealVar mass ("mass_scaled_dimuon2012","mass_scaled_dimuon2012",200.,8000.);
+   //RooRealVar testvar = = static_cast<RooVoigtian *>(_myWS->var("mass"));
+
+   RooPlot* frame = mass.frame();
+
+   myVoigt->plotOn(frame);
+
+   outfile->WriteTObject(frame);
+   cout << "Hei-ho 6" << endl;
+
+   RooSimultaneous * mySimultaneous_model  = static_cast<RooSimultaneous*>(_myWS->pdf("model"));
+   cout << "model is normalized to: " << mySimultaneous_model->getNorm(mySet2) << endl;
+   RooSimultaneous * mySimultaneous_model_dimuon2012  = static_cast<RooSimultaneous*>(_myWS->pdf("model_dimuon2012"));
+   cout << "model is normalized to: " << mySimultaneous_model_dimuon2012->getNorm(mySet2) << endl;
+
+   //test likelihood evaluation
+
+   // load and print S+B Model Config
+   RooStats::ModelConfig * pSbHypo = _myModelConfig;
+   pSbHypo->Print();
+   
+   // get RooArgSet with poi 
+   RooArgSet * poiSet = new RooArgSet();
+   poiSet->add(*(_myWS->var("ratio")));
+   
+   // set parameter snapshot that corresponds to the best fit to data
+   RooAbsReal * pNll = pSbHypo->GetPdf()->createNLL( *(_databox->createObservedData()) );
+   
+   // global fit preparation
+   // (RooArgSet here defines the parameters that are NOT fitted)
+   //RooAbsReal * pProfile = pNll->createProfile( RooArgSet() ); 
+   
+   // ...or do not profile global observables
+   RooAbsReal * pProfile = pNll->createProfile( *poiSet ); 
+   
+   // do fit and set POI and nuisance parameters to fitted values
+   double _pnll = pProfile->getVal(); 
+   
+   std::cout << std::endl;
+   std::cout << "profiled: -log L = " << _pnll << std::endl;
+
+
+   //frame->Write();
 
    if (mcInt && filename.size() > 0){
 

@@ -27,8 +27,10 @@ class DataPruner {
 
    public: 
 
-      // constructor
-      DataPruner(std::map<std::string , double> Rangemap);
+      // constructor: adjust lower range for set of given channels
+      DataPruner(std::map<std::string , double> Rangemap, ModelConfiguratorZprime * configurator);
+      // constructor: adjust range of all channels according to signal hypothesis
+      DataPruner(double n_width, ModelConfiguratorZprime * configurator);
       // destructor
       ~DataPruner();
 
@@ -37,9 +39,13 @@ class DataPruner {
    private:
 
       void Prune(std::string channelname, double massThreshold);
+      void Prune(std::string channelname, double massThreshLow, double massThreshHigh);
 
+      
       const std::string legend;
-      //ModelConfiguratorZprime * _configurator; // pointer to ModelConfigurator object which contains the combined Workspace and ModelConfig
+      std::string option;
+      double _n_width;
+      ModelConfiguratorZprime * _configurator; // pointer to ModelConfigurator object which contains the combined Workspace and ModelConfig
       std::vector<std::string> _channelnames;
       std::map<std::string , double> _Rangemap; // stores limits to masses in the datasets of the channels
       std::map<string, RooDataSet*> * _Datamap;
