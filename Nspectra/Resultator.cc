@@ -674,31 +674,31 @@ void Resultator::makeMcmcPosteriorPlot( MCMCInterval * mcInt, std::string filena
    cout << p1name << " is: " << _myWS->var(p1name.c_str())->getVal() << endl;
 
    cout << "Hei-ho 1" << endl;
-   //make plot of RooVoigtian
-   RooVoigtian * myVoigt = static_cast<RooVoigtian *>(_myWS->pdf("sigpdf_dimuon2012"));
-   RooRealVar * mymass = static_cast<RooRealVar *>(_myWS->var("mass"));
-   RooArgSet * mySet = new RooArgSet(*mymass);
-   RooArgSet * mySet2 = new RooArgSet(*mymass);
-   RooRealVar * my_beta_nsig_dimuon2012 = static_cast<RooRealVar *>(_myWS->var("beta_nsig_dimuon2012"));
-   RooRealVar * my_beta_nbkg_dimuon2012 = static_cast<RooRealVar *>(_myWS->var("beta_nbkg_dimuon2012"));
-   mySet2->add(*my_beta_nsig_dimuon2012);
-   mySet2->add(*my_beta_nbkg_dimuon2012);
-   cout << "signal shape is normalized to: " << myVoigt->getNorm(mySet) << endl;
-
-   RooRealVar mass ("mass_scaled_dimuon2012","mass_scaled_dimuon2012",200.,8000.);
-   //RooRealVar testvar = = static_cast<RooVoigtian *>(_myWS->var("mass"));
-
-   RooPlot* frame = mass.frame();
-
-   myVoigt->plotOn(frame);
-
-   outfile->WriteTObject(frame);
-   cout << "Hei-ho 6" << endl;
-
-   RooSimultaneous * mySimultaneous_model  = static_cast<RooSimultaneous*>(_myWS->pdf("model"));
-   cout << "model is normalized to: " << mySimultaneous_model->getNorm(mySet2) << endl;
-   RooSimultaneous * mySimultaneous_model_dimuon2012  = static_cast<RooSimultaneous*>(_myWS->pdf("model_dimuon2012"));
-   cout << "model is normalized to: " << mySimultaneous_model_dimuon2012->getNorm(mySet2) << endl;
+//    //make plot of RooVoigtian
+//    RooVoigtian * myVoigt = static_cast<RooVoigtian *>(_myWS->pdf("sigpdf_dimuon2012"));
+//    RooRealVar * mymass = static_cast<RooRealVar *>(_myWS->var("mass"));
+//    RooArgSet * mySet = new RooArgSet(*mymass);
+//    RooArgSet * mySet2 = new RooArgSet(*mymass);
+//    RooRealVar * my_beta_nsig_dimuon2012 = static_cast<RooRealVar *>(_myWS->var("beta_nsig_dimuon2012"));
+//    RooRealVar * my_beta_nbkg_dimuon2012 = static_cast<RooRealVar *>(_myWS->var("beta_nbkg_dimuon2012"));
+//    mySet2->add(*my_beta_nsig_dimuon2012);
+//    mySet2->add(*my_beta_nbkg_dimuon2012);
+//    cout << "signal shape is normalized to: " << myVoigt->getNorm(mySet) << endl;
+// 
+//    RooRealVar mass ("mass_scaled_dimuon2012","mass_scaled_dimuon2012",200.,8000.);
+//    //RooRealVar testvar = = static_cast<RooVoigtian *>(_myWS->var("mass"));
+// 
+//    RooPlot* frame = mass.frame();
+// 
+//    myVoigt->plotOn(frame);
+// 
+//    outfile->WriteTObject(frame);
+//    cout << "Hei-ho 6" << endl;
+// 
+//    RooSimultaneous * mySimultaneous_model  = static_cast<RooSimultaneous*>(_myWS->pdf("model"));
+//    cout << "model is normalized to: " << mySimultaneous_model->getNorm(mySet2) << endl;
+//    RooSimultaneous * mySimultaneous_model_dimuon2012  = static_cast<RooSimultaneous*>(_myWS->pdf("model_dimuon2012"));
+//    cout << "model is normalized to: " << mySimultaneous_model_dimuon2012->getNorm(mySet2) << endl;
 
    //test likelihood evaluation
 

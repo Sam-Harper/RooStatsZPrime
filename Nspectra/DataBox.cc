@@ -40,6 +40,7 @@ DataBox::DataBox(ModelConfiguratorZprime* configurator, DataPruner * myDataPrune
    _myWS = _configurator->getCombinedWS() ;
    _myModelConfig = _configurator->getCombinedModelConfig();
    _channelnames = _configurator->getChannelNames();
+   _pruned = false;
 
    SetNeventsData();
 
@@ -57,7 +58,11 @@ RooDataSet * DataBox::createObservedData(){
    RooRealVar * mass = _myWS->var("mass"); //FIXME: can be done without hardcoding the parameter name
    
    //prune data if requested
+   if(!_pruned){
    _myDataPruner->Prune(_configurator->getChannelDataMapPointer());
+   _myDataPruner->Norm(_configurator->getChannelDataMapPointer());
+   _pruned = true; //avoid multiple pruning leading to wrong normalization
+   }
    
    cout << "creating combined dataset ... " << endl;
    
@@ -94,10 +99,33 @@ RooDataSet * DataBox::createToyMc(){
       std::string nbkg_kappa_channelname = "nbkg_kappa_" + (*nameit);
       std::string nbkg_est_channelname = "nbkg_est_" + (*nameit);
 
-      Double_t _beta = GetRandom(syst_nbkg_channelname , beta_nbkg_channelname);
-      Double_t _kappa = _myWS->var(nbkg_kappa_channelname.c_str())->getVal();
-      Double_t _nbkg_est = _myWS->var(nbkg_est_channelname.c_str())->getVal();
-      Double_t _ntoy = pow(_kappa,_beta) * _nbkg_est;
+      Double_t _ntoy = -1.;
+      Double_t _beta = -1.;
+      Double_t _kappa = -1.;
+      Double_t _nbkg_est = -1.;
+
+      if(((*nameit) == "dielectron_ebeb") || ((*nameit) == "dielectron_ebee")) {
+
+         std::string nbkg_kappa_b_channelname = "nbkg_kappa_b_" + (*nameit);
+         std::string nbkg_kappa_m_channelname = "nbkg_kappa_m_" + (*nameit);
+         std::string nbkg_kappa_msquared_channelname = "nbkg_kappa_msquared_" + (*nameit);
+         std::string peak = "peak";
+         Double_t nbkg_kappa_b_channelname_val = _myWS->var(nbkg_kappa_b_channelname.c_str())->getVal();
+         Double_t nbkg_kappa_m_channelname_val = _myWS->var(nbkg_kappa_m_channelname.c_str())->getVal();
+         Double_t nbkg_kappa_msquared_channelname_val = _myWS->var(nbkg_kappa_msquared_channelname.c_str())->getVal();
+         Double_t peak_val = _myWS->var(peak.c_str())->getVal();
+
+         _beta = GetRandom(syst_nbkg_channelname , beta_nbkg_channelname);
+         _kappa = nbkg_kappa_b_channelname_val + nbkg_kappa_m_channelname_val * peak_val + nbkg_kappa_msquared_channelname_val * peak_val * peak_val;
+         _nbkg_est = _myWS->var(nbkg_est_channelname.c_str())->getVal();
+         _ntoy = pow(_kappa,_beta) * _nbkg_est;
+      }
+      else{
+         _beta = GetRandom(syst_nbkg_channelname , beta_nbkg_channelname);
+         _kappa = _myWS->var(nbkg_kappa_channelname.c_str())->getVal();
+         _nbkg_est = _myWS->var(nbkg_est_channelname.c_str())->getVal();
+         _ntoy = pow(_kappa,_beta) * _nbkg_est;
+      }
       
       Int_t _n = _myrandgen->Poisson(_ntoy);
       
@@ -141,7 +169,11 @@ RooDataSet * DataBox::createToyMc(){
    RooRealVar * mass = _myWS->var("mass"); //FIXME: can be done without hardcoding the parameter name
 
    //Prune data (remove all events below specified mass threshold) if requested in the setup
+   if(!_pruned){
    _myDataPruner->Prune(&_DatamapToy);
+   _myDataPruner->Norm(&_DatamapToy);
+   _pruned = true; //avoid multiple pruning leading to wrong normalization
+   }
 
    // create combined dataset
    RooDataSet * data = new RooDataSet( "combdata", "combined data",
@@ -228,6 +260,7 @@ RooDataSet * DataBox::createPeData(){
 
    //Prune data (remove all events below specified mass threshold) if requested in the setup
    _myDataPruner->Prune(&_DatamapToy);
+   _myDataPruner->Norm(&_DatamapToy);
 
    // create combined dataset
    RooDataSet * data = new RooDataSet( "combdata", "combined data",

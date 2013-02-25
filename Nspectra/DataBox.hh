@@ -45,6 +45,7 @@ class DataBox {
       const std::string legend;
       ModelConfiguratorZprime * _configurator;
       DataPruner * _myDataPruner;
+      bool _pruned;
       RooWorkspace * _myWS;
       ModelConfig * _myModelConfig;
       std::map<string, RooDataSet*> _DatamapToy; // contains datasets for the current toy experiment
