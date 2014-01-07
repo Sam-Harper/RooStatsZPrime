@@ -4,6 +4,7 @@
 #include <vector>
 #include <cmath>
 
+#include "TSystem.h"
 #include "RooWorkspace.h"
 #include "TFile.h"
 
@@ -17,12 +18,14 @@
 #include "RooRealVar.h"
 #include "RooNumIntConfig.h"
 
+
+
 using namespace RooFit;
 using namespace std;
 
 
 int main(int argc, char* argv[]) {
-
+  gSystem->AddIncludePath("-I$ROOFITSYS/include");
    //without this settings root is having troubles to correctly normalize the model
    RooAbsReal::defaultIntegratorConfig()->method1D().setLabel("RooAdaptiveGaussKronrodIntegrator1D");
    RooAbsReal::defaultIntegratorConfig()->getConfigSection("RooAdaptiveGaussKronrodIntegrator1D").setCatLabel("method","61Points") ;

@@ -1,0 +1,24 @@
+How to run the code with Moriond 2013
+
+1) ensure that CMSSW is setup. 538 has been explicity tested but others may work
+2) ensure you are in the Nspectra directory (ie the directory this file is in)
+3) download http://sharper.web.cern.ch/sharper/cms/ZPrimeMoriond2013Workspaces.tgz to this directory
+4) tar -zcvf ZPrimeMoriond2013Workspaces.tgz
+5) gmake -f GNUmakefileLimitMoriond2013
+6) ./LimitMoriond2013 1 1 1 1000 2 100000 testLim_allchannels_Moriond13 observed workspaces/ 0 1 1.5 1
+arguements are:
+[1] type: int (0 -> false; 1,2,.. -> true), meaning: use dimuon channel?
+[2] type: int (0 -> false; 1,2,.. -> true), meaning: use dielectron EBEB channel
+[3] type: int (0 -> false; 1,2,.. -> true), meaning: use dielectron EBEE channel 
+[4] type: double, meaning: signal mass hypothesis
+[5] type: int, meaning: iterations/toy experiments
+[6] type: int, meaning: length of the Markov Chain
+[7] type: string, meaning: file name suffix for the output
+[8] type: string, meaning: mode of running: available options are 'observed' or 'expected'
+[9] type: string, meaning: path to the directory with the single channel workspaces
+[10] type: int (0 -> false; 1,2,.. -> true), meaning: write posterior plots?
+[11] type: int (0 -> false; 1,2,.. -> true), meaning: restrict mass range for the unbinned likelihood?
+[12] type: double, meaning: factor on estimated POI range (for convergence tests)
+[13] type: int (0 -> false; 1,2,.. -> true), meaning: apply systematic uncertainty on resonance mass hypothesis?
+
+The above command will run full channel combination for observed limits twice with 100000 length Markov Chain for a signal mass of 1000 GeV. It will take some time...

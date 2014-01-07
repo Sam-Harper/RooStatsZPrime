@@ -15,7 +15,7 @@ PROGNAME      = LimitMoriond2013
 SOURCES       = Pixie.cc ModelConfigurator.cc ModelConfiguratorZprime.cc DataPruner.cc PoiRangeEstimator.cc DataBox.cc Resultator.cc LimitMoriond2013.cc 
 INCLUDES      = 
 OBJECTS       = $(patsubst %.cc, %.o, $(SOURCES))
-ROOTCFLAGS   := $(shell root-config --cflags)
+ROOTCFLAGS   := $(shell root-config --cflags) -I$(ROOFITSYS)/include
 ROOTLIBS     := $(shell root-config --libs)
 ROOTGLIBS    := $(shell root-config --glibs)
 ROOTLIBS     := $(shell root-config --nonew --libs)
@@ -28,7 +28,7 @@ LIBS         += $(ROOTLIBS)
 #
 LIBS         += -lMinuit -lFoam -lMinuit -lRooFitCore -lRooFit -lMathMore -lRooStats 
 #LIBS         += -lRooFit -lRooFitCore -lRooStats -lBAT -lBATmodels 
-LDFLAGS       = $(shell root-config --ldflags --glibs)
+LDFLAGS       = $(shell root-config --ldflags --glibs) -L$(ROOFITSYS)/lib
 
 $(PROGNAME):    $(OBJECTS)
 		g++ -g -o $@ $(OBJECTS) $(LDFLAGS) $(LIBS)
