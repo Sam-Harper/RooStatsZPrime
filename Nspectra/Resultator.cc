@@ -13,6 +13,7 @@
 #include <iomanip>
 #include <stdexcept>
 #include <limits>
+#include <fstream>
 
 #include "RooStats/SimpleInterval.h"
 #include "RooStats/BayesianCalculator.h"
