@@ -1,0 +1,152 @@
+#!/usr/bin/env python
+
+import os
+import sys
+#import subprocess
+from optparse import OptionParser
+import datetime
+
+
+
+###########################
+#
+# Environment
+#
+
+# ugly hack to make ExoSt work on the nonstandard CMSSW ROOT installation
+from ROOT import gSystem
+if 'ROOFIT_INCLUDE' in os.environ.keys():
+    gSystem.SetIncludePath( "-I$ROOT_INCLUDE -I$ROOFIT_INCLUDE");
+    print "setting include"
+
+# parse command line parameters
+import exostCommandLineParser
+clparser = exostCommandLineParser.exostCLParser()
+cloptions = clparser.get_options()
+
+# setup environment
+from exostEnv import exostEnv
+env = exostEnv(cloptions)
+
+
+
+
+###########################
+#
+# Main
+#
+legend = '[ExoSt]:'
+
+import exostCore as core
+import exostConfig
+from exostAction import exostAction
+from exostMcmc import exostMcmc
+from exostPlc import exostPlc
+from exostFc import exostFc
+
+
+
+
+###########################
+#
+# Configure Actions
+#
+
+#list of actions will be read from config
+actions = ['test', 'workspace', 'bayes']
+
+# singleton action manager class
+mActions = exostAction.instance()
+
+# register actions
+exostMcmc()
+exostPlc()
+exostFc()
+
+# list available actions (self-aware actions only)
+#mActions.print_actions()
+
+# append self-aware action names to the action list
+actions += mActions.action_names()
+
+# exit if no valid action specified
+if (cloptions.action not in actions):
+    print legend, 'unknown action:', cloptions.action, 'exiting...'
+    sys.exit(-1)
+
+# actions settings container
+settings = {}
+
+
+
+
+###################################################
+#
+# Config
+#
+
+#config items container
+items = {}
+
+# process config file
+config = exostConfig.Config(cloptions.config_file, cloptions.debug)
+
+
+print config
+
+
+###################################################
+#
+# Workspace
+#
+
+# The workspace
+from ROOT import RooWorkspace
+ws = RooWorkspace('myWS')
+
+# populate variables from config to the workspace
+_sets = config.variables(ws, cloptions.debug)['sets']
+# populate data from config to the workspace
+config.data(ws, cloptions.debug, sets = _sets)
+
+# populate model from config to the workspace
+config.model(ws, cloptions.debug)
+
+# configure the model for RooStats calculators
+config.model_config(ws, cloptions.debug, sets = _sets)
+
+# configure bayesian RooStats calculator
+settings['bayes'] = config.bayesian(ws, cloptions.debug)
+
+# print the contents of the workspace
+ws.Print()
+
+# save Workspace to file
+ws.SaveAs('myWS.root')
+
+
+
+###########################
+#
+# Perform Actions
+#
+
+# old
+if cloptions.action in ['bayes']:
+    if cloptions.action in settings.keys():
+        core.action(ws, cloptions.action, settings[cloptions.action])
+    else:
+        core.action(ws, cloptions.action)
+    
+
+if cloptions.action not in ['test', 'workspace', 'bayes']:
+    # temporary fix for old-style actions
+    # this "if" will eventually go away
+    
+    # configure self-aware sections
+    config.self_aware_sections(ws, cloptions.debug)
+    
+    # execute requested action (new)
+    mActions.execute(ws, cloptions.debug, cloptions.action)
+    
+
