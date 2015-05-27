@@ -18,7 +18,19 @@ from ROOT import gSystem
 if 'ROOFIT_INCLUDE' in os.environ.keys():
     gSystem.SetIncludePath( "-I$ROOT_INCLUDE -I$ROOFIT_INCLUDE");
     print "setting include"
+elif 'ROOFITSYS' in os.environ.keys():
+    gSystem.SetIncludePath( "-I$ROOT_INCLUDE -I$ROOFITSYS/include");
+   # gSystem.Load("$ROOTFITSYS/lib/libRooStats.so")
+   # gSystem.Load("$ROOTFITSYS/lib/libRooFit.so")
+   # gSystem.Load("$ROOTFITSYS/lib/libRooFitCore.so")
 
+    print "setting include roofitsys"
+if 'ROOT_INCLUDE' not in os.environ.keys():
+    print "you didnt do export ROOT_INCLUDE=$ROOTSYS/include in your shell, you need to do this"
+    exit(0)
+from ROOT import gROOT
+gROOT.ProcessLine(".L ZPrimeBkgPdf.cxx+")
+gROOT.ProcessLine(".L ZPrimeVoigtian.cxx+")
 # parse command line parameters
 import exostCommandLineParser
 clparser = exostCommandLineParser.exostCLParser()
@@ -92,7 +104,9 @@ items = {}
 config = exostConfig.Config(cloptions.config_file, cloptions.debug)
 
 
-print config
+chan_config_items = {}
+chan_config_items.update(config.items["Channel Config"])
+chanName=chan_config_items["chan_name"]
 
 
 ###################################################
@@ -102,8 +116,8 @@ print config
 
 # The workspace
 from ROOT import RooWorkspace
-ws = RooWorkspace('myWS')
-
+ws = RooWorkspace(chanName)
+#ws.importClassCode("*",False)
 # populate variables from config to the workspace
 _sets = config.variables(ws, cloptions.debug)['sets']
 # populate data from config to the workspace
@@ -122,7 +136,7 @@ settings['bayes'] = config.bayesian(ws, cloptions.debug)
 ws.Print()
 
 # save Workspace to file
-ws.SaveAs('myWS.root')
+ws.SaveAs(chanName+"_workspace.root")
 
 
 

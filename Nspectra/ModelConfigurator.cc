@@ -146,5 +146,7 @@ void ModelConfigurator::setVar(std::string name, double value){
 void ModelConfigurator::setVarRange(std::string name, double valuelow, double valuehigh){
    std::string funclegend = "ModelConfigurator::setVarRange(std::string name, double valuelow, double valuehigh) - ";
    cout << legend << funclegend << "WARNING: manually adjusting range of variable " << name << " to " << valuelow << " .. " << valuehigh << endl;
+   _CombinedWS->Print();
+   std::cout <<"getting var"<<std::endl;
    _CombinedWS->var(name.c_str())->setRange(valuelow, valuehigh);
 }

@@ -462,6 +462,8 @@ Double_t Resultator::calculateRatioSignificance( std::string mode,
       // prepare PE data
       RooDataSet * data = _databox->createPeData();
 
+      std::cout <<"data "<<*data<<std::endl;
+      data->Print("v");
    // add signal (optional)
    //AddPseudoData("dimuon", sigPdfDimuonName, mu_sig_mumu, _peak, true);
    //AddPseudoData("dielectron", sigPdfDielectronName, mu_sig_ee, _peak, true);

@@ -226,7 +226,7 @@ RooDataSet * DataBox::createPeData(){
    for(std::vector<std::string>::iterator nameit = _channelnames.begin(); nameit != _channelnames.end(); nameit++ ){
 
       Int_t nchannel = _neventsDataMap.find(*nameit)->second;
-      
+      std::cout <<"we are going to generate "<<nchannel<<" events "<<std::endl;
       // create dataset
       RooRealVar * _mass = _myWS->var("mass"); //FIXME: no need to have the name of the observable hardcoded
       RooArgSet _vars(*_mass);

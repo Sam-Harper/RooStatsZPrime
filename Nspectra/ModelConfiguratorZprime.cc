@@ -44,7 +44,8 @@ void ModelConfiguratorZprime::Setup() {
 
    //iterate over channels
    for(std::map<string, RooWorkspace*>::iterator channelit = _WSmap.begin(); channelit != _WSmap.end() ; channelit++){
-      Setup_channel( channelit->first );
+     std::cout <<channelit->first<<std::endl;
+     Setup_channel( channelit->first );
 
    }
 
@@ -94,8 +95,9 @@ void ModelConfiguratorZprime::Setup_channel(std::string channelname) {
    allVariables.Print();
    RooLinkedListIter setIt = allVariables.iterator() ;
 
-   while(setIt.Next()){ 
+   while(setIt.Next() && *setIt){ 
    //while((*setIt) != 0){ // doesn't wok
+     std::cout <<"test "<<*setIt<<std::endl;
       std::string nameString = (*setIt)->GetName();
       cout << legend << funclegend << "checking if variable " << nameString << " is shared" << endl;
       if (nameString.find("shared")!=std::string::npos){
@@ -111,10 +113,11 @@ void ModelConfiguratorZprime::Setup_channel(std::string channelname) {
    // import the channel likelihood into the combined workspace
    // add prefix channelname to all nodes except shared_vars
    // COMMENT: in twobody.C the list of shared variables depends on the number of channels (1 vs. 2), will it cause problems if the list longer or contains undefined variables?
+   std::cout <<"inclusing "<<channelmodel<<std::endl;
     _CombinedWS->import( *channelmodel,
           RooFit::RenameAllNodes( channelname.c_str() ),
           RooFit::RenameAllVariablesExcept(channelname.c_str(), _sharedVarsString.c_str()) );
-
+    std::cout <<"done "<<std::endl;
 
    // load the data associated with the channel's workspace
    RooAbsData * channelRooAbsData = channelWS->data("data");
