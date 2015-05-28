@@ -72,7 +72,8 @@ int main(int argc, char* argv[]) {
    cmdLineInt.addOption("massStep",&massStep,10,"mass step for scan");
    if(!cmdLineInt.processCmdLine(argc,argv)) return 0; //exit if we havnt managed to get required parameters
    
- 
+   RooMsgService::instance().setGlobalKillBelow(RooFit::FATAL);
+
 
    std::cout << "calculate some limits ..." <<std::endl;
 
