@@ -277,7 +277,9 @@ void DataBox::SetNeventsData(){
 
    //   loop over channels
    for(std::vector<std::string>::iterator nameit = _channelnames.begin(); nameit != _channelnames.end(); nameit++ ){
-       _neventsDataMap.insert( pair<string, int>((*nameit), static_cast<int>((_configurator->getChannelDataMap())[(*nameit)]->sumEntries()) ) );
+     _neventsDataMap.insert( pair<string, int>((*nameit), static_cast<int>((_configurator->getChannelDataMap())[(*nameit)]->sumEntries()) ) );
+     //    std::string bkgEstName = "nbkg_est_"+*nameit;
+     //_neventsDataMap.insert( pair<string, int>(*nameit, static_cast<int>(_configurator->getCombinedWS()->var(bkgEstName.c_str())->getVal()) ) ); //fixing it so it takes the background estimate
    }
 
 }
