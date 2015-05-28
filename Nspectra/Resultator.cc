@@ -462,11 +462,13 @@ Double_t Resultator::calculateRatioSignificance( std::string mode,
       // prepare PE data
       RooDataSet * data = _databox->createPeData();
 
-      std::cout <<"data "<<*data<<std::endl;
-      data->Print("v");
+      //std::cout <<"data "<<*data<<std::endl;
+      //  data->Print("v");
    // add signal (optional)
    //AddPseudoData("dimuon", sigPdfDimuonName, mu_sig_mumu, _peak, true);
    //AddPseudoData("dielectron", sigPdfDielectronName, mu_sig_ee, _peak, true);
+      //std::cout <<"value of nbkg_est "<<_myWS->var("nbkg_est_diele_13TeV_phys14")->getVal()<<std::endl;
+      //      _myWS->var("nbkg_est_diele_13TeV_phys14")->setVal(78000);
 
     // set parameter snapshot for bg-only hypothesis
     RooAbsReal * pNll = _myModelConfig->GetPdf()->createNLL( *data );
@@ -488,7 +490,9 @@ Double_t Resultator::calculateRatioSignificance( std::string mode,
     _myWS->defineSet( null_parameters_name.c_str(), *pPoiAndNuisance );
     _myWS->saveSnapshot(null_parameters_snapshot_name.c_str(), *_myWS->set(null_parameters_name.c_str()));
 
-    _myWS->Print();
+    // _myWS->Print();
+
+    std::cout <<"value of nbkg_est "<<_myWS->var("nbkg_est_diele_13TeV_phys14")->getVal()<<std::endl;
 
     delete pProfile;
     delete pNll;
