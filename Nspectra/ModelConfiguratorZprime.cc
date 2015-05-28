@@ -36,7 +36,7 @@ ModelConfiguratorZprime::~ModelConfiguratorZprime(){
 // creates combined workspace and ModelConfig for the analysis
 void ModelConfiguratorZprime::Setup() {
    std::string funclegend = "Setup() - ";
-   cout << legend << sublegend << funclegend << endl;
+   if(verbose_) cout << legend << sublegend << funclegend << endl;
 
    if(_poiString == ""){
       cerr << legend << sublegend << funclegend << "ERROR: poi has not been defined, use ModelConfigurator::setPoiString(std::string poiString)" << endl;
@@ -73,7 +73,7 @@ void ModelConfiguratorZprime::Setup() {
 void ModelConfiguratorZprime::Setup_channel(std::string channelname) {
    std::string funclegend = "Setup_channel() - ";
    funclegend += channelname;
-   cout << legend << sublegend << funclegend << " - begin ..." << endl;
+   if(verbose_) cout << legend << sublegend << funclegend << " - begin ..." << endl;
 
    //add channel name to string vector with channel anmes
    _channelnames.push_back(channelname);
@@ -91,17 +91,16 @@ void ModelConfiguratorZprime::Setup_channel(std::string channelname) {
 
    // check for "shared" in variable name for automatic detection of shared variables
    RooArgSet allVariables = channelWS->allVars();
-   cout << "-#-#-#-#-#-#-#-#-" << endl;
+   if(verbose_) cout << "-#-#-#-#-#-#-#-#-" << endl;
    allVariables.Print();
    RooLinkedListIter setIt = allVariables.iterator() ;
 
    while(setIt.Next() && *setIt){ 
    //while((*setIt) != 0){ // doesn't wok
-     std::cout <<"test "<<*setIt<<std::endl;
       std::string nameString = (*setIt)->GetName();
-      cout << legend << funclegend << "checking if variable " << nameString << " is shared" << endl;
+      if(verbose_) cout << legend << funclegend << "checking if variable " << nameString << " is shared" << endl;
       if (nameString.find("shared")!=std::string::npos){
-         cout << legend << funclegend << "identified variable " << nameString << " as shared" << endl;
+         if(verbose_) cout << legend << funclegend << "identified variable " << nameString << " as shared" << endl;
          _sharedVarsString += ",";
          _sharedVarsString += nameString;
       }
@@ -125,13 +124,13 @@ void ModelConfiguratorZprime::Setup_channel(std::string channelname) {
    //insert the data associated with the channel's workspace into map relating it to the name of the channel
    _Datamap.insert( pair<string, RooDataSet *>(channelname, channelRooDataSet) );
 
-   cout << legend << sublegend << funclegend << " - end ..." << endl;
+   if(verbose_) cout << legend << sublegend << funclegend << " - end ..." << endl;
 }
 
 void ModelConfiguratorZprime::Setup_ModelConfig() {
    //start from line 1766 in twobody.C 
    std::string funclegend = "Setup_ModelConfig() - ";
-   cout << legend << sublegend << funclegend << endl;
+   if(verbose_) cout << legend << sublegend << funclegend << endl;
 
 
    _CombinedModelConfig = new ModelConfig("combinedModelConfig");
@@ -142,8 +141,8 @@ void ModelConfiguratorZprime::Setup_ModelConfig() {
    RooArgSet sNuis;
    for( std::map<std::string, std::vector<std::string> >::iterator mapIt = _nuisanceStringMap.begin(); mapIt != _nuisanceStringMap.end(); mapIt++){
       for(std::vector<std::string>::iterator vecIt = ((*mapIt).second).begin(); vecIt != ((*mapIt).second).end(); vecIt++){
-         cout << legend << sublegend << funclegend << " add nuisance parameter: " << (*vecIt).c_str() << endl;
-         cout << legend << sublegend << funclegend << "nuisance parameter " << (*vecIt).c_str() << " has name " << _CombinedWS->var( (*vecIt).c_str() )->GetName() << " and title " << _CombinedWS->var( (*vecIt).c_str() )->GetTitle() << endl;
+         if(verbose_) cout << legend << sublegend << funclegend << " add nuisance parameter: " << (*vecIt).c_str() << endl;
+         if(verbose_) cout << legend << sublegend << funclegend << "nuisance parameter " << (*vecIt).c_str() << " has name " << _CombinedWS->var( (*vecIt).c_str() )->GetName() << " and title " << _CombinedWS->var( (*vecIt).c_str() )->GetTitle() << endl;
          sNuis.add( *(_CombinedWS->var( (*vecIt).c_str() )) );
       }
    }
@@ -151,7 +150,7 @@ void ModelConfiguratorZprime::Setup_ModelConfig() {
    RooArgSet sGlobalObs;
    for( std::map<std::string, std::vector<std::string> >::iterator mapIt = _globalObsStringMap.begin(); mapIt != _globalObsStringMap.end(); mapIt++){
       for(std::vector<std::string>::iterator vecIt = ((*mapIt).second).begin(); vecIt != ((*mapIt).second).end(); vecIt++){
-         cout << legend << sublegend << funclegend << " add global observable: " << (*vecIt).c_str() << endl;
+         if(verbose_) cout << legend << sublegend << funclegend << " add global observable: " << (*vecIt).c_str() << endl;
          sGlobalObs.add( *(_CombinedWS->var( (*vecIt).c_str() )) );
       }
    }
@@ -160,7 +159,7 @@ void ModelConfiguratorZprime::Setup_ModelConfig() {
    RooArgSet sObs;
    for( std::map<std::string, std::vector<std::string> >::iterator mapIt = _observablesStringMap.begin(); mapIt != _observablesStringMap.end(); mapIt++){
       for(std::vector<std::string>::iterator vecIt = ((*mapIt).second).begin(); vecIt != ((*mapIt).second).end(); vecIt++){
-         cout << legend << sublegend << funclegend << " add observable: " << (*vecIt).c_str() << endl;
+         if(verbose_) cout << legend << sublegend << funclegend << " add observable: " << (*vecIt).c_str() << endl;
          sObs.add( *(_CombinedWS->var( (*vecIt).c_str() )) );
       }
    }
@@ -176,18 +175,18 @@ void ModelConfiguratorZprime::Setup_ModelConfig() {
    _CombinedModelConfig->SetObservables( sObs );
    _CombinedModelConfig->SetGlobalObservables( sGlobalObs );
 
-   cout << legend << sublegend << funclegend << "importing combined ModelConfig" << _CombinedModelConfig->GetName() << " into workspace" << endl;
+   if(verbose_) cout << legend << sublegend << funclegend << "importing combined ModelConfig" << _CombinedModelConfig->GetName() << " into workspace" << endl;
    
    //load the ModelConfig objects for the combined model into the combined workspace
    _CombinedWS->import(*_CombinedModelConfig);
 
-   cout << legend << sublegend << funclegend << "setup for combined ModelConfig" << _CombinedModelConfig->GetName() << " complete" << endl;
+   if(verbose_) cout << legend << sublegend << funclegend << "setup for combined ModelConfig" << _CombinedModelConfig->GetName() << " complete" << endl;
 
 }
 
 void ModelConfiguratorZprime::setMassHypothesis(double peak){
    std::string funclegend = "setMassHypothesis(double peak) - ";
-   cout << legend << sublegend << funclegend << "adjusting Z' mass hypothesis from "<< _peak << " to " << peak << endl;
+   if(verbose_) cout << legend << sublegend << funclegend << "adjusting Z' mass hypothesis from "<< _peak << " to " << peak << endl;
    //CONVENTION: variable for Z' mass must be named "peak"
    _CombinedWS->var("peak")->setVal(peak);
 }

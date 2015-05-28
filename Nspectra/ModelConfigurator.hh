@@ -74,7 +74,7 @@ class ModelConfigurator {
       std::map<std::string, std::vector<std::string> > _globalObsStringMap;
       std::map<std::string, std::vector<std::string> > _observablesStringMap;
       Pixie _myPixie;
-
+      bool verbose_;
 
 };
 #endif

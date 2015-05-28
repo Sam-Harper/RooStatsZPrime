@@ -20,14 +20,14 @@ using namespace RooStats;
 
 
 //--------------------Constructor
-ModelConfigurator::ModelConfigurator(std::map<string, RooWorkspace*> WSmap) : legend("ModelConfigurator - "), _myPixie() {
+ModelConfigurator::ModelConfigurator(std::map<string, RooWorkspace*> WSmap) : legend("ModelConfigurator - "), _myPixie(),verbose_(false) {
 
    _WSmap = WSmap;
    _CombinedWS = new RooWorkspace("CombinedWS");
    _sharedVarsString = "";
    _poiString = "";
    channel_cat = new RooCategory("channels", "channels"); //COMMENT: check why/ what for we need this
-   cout << legend << "constructed" << endl;
+   if(verbose_) cout << legend << "constructed" << endl;
 }
 
 ModelConfigurator::~ModelConfigurator() {
@@ -36,7 +36,7 @@ ModelConfigurator::~ModelConfigurator() {
    delete _CombinedModelConfig;
    delete _CombinedWS;
    delete channel_cat;
-   cout << legend << "deleted" << endl;
+   if(verbose_) cout << legend << "deleted" << endl;
 }
 
 void ModelConfigurator::setSharedVars(std::string sharedVarsString) {
@@ -45,8 +45,8 @@ void ModelConfigurator::setSharedVars(std::string sharedVarsString) {
       _sharedVarsStringVec = _myPixie.commaSepStringToStringVec(sharedVarsString);
    }
    else{
-      cout << legend << "cannot change shared variables once they are defined" << endl;
-      cout << legend << "shared variables are: " << _sharedVarsString << endl;
+      if(verbose_) cout << legend << "cannot change shared variables once they are defined" << endl;
+      if(verbose_) cout << legend << "shared variables are: " << _sharedVarsString << endl;
    }
 }
 
@@ -56,8 +56,8 @@ void ModelConfigurator::setPoiString(std::string poiString) {
       //FIXME: issue warning if poiString does not correspond to a variable in the workspaces
    }
    else{
-      cout << legend << "cannot change poi once it is defined" << endl;
-      cout << legend << "poi is: " << _poiString << endl;
+      if(verbose_) cout << legend << "cannot change poi once it is defined" << endl;
+      if(verbose_) cout << legend << "poi is: " << _poiString << endl;
    }
 }
 
@@ -71,7 +71,7 @@ void ModelConfigurator::setNuisanceParams(std::string channelname, std::string n
       _nuisanceStringMap.insert( pair<string, std::vector<std::string> >(channelname, nuisanceStringVec) );
    }
    else{
-      cout << legend << funclegend << " cannot change these parameters once they have been defined " << endl;
+      if(verbose_) cout << legend << funclegend << " cannot change these parameters once they have been defined " << endl;
    }
 }
 
@@ -85,7 +85,7 @@ void ModelConfigurator::setGlobalObs(std::string channelname, std::string Global
       _globalObsStringMap.insert( pair<string, std::vector<std::string> >(channelname, globalObsStringVec) );
    }
    else{
-      cout << legend << funclegend << " cannot change these parameters once they have been defined " << endl;
+      if(verbose_) cout << legend << funclegend << " cannot change these parameters once they have been defined " << endl;
    }
 }
 
@@ -99,7 +99,7 @@ void ModelConfigurator::setObservables(std::string channelname, std::string Obse
       _observablesStringMap.insert( pair<string, std::vector<std::string> >(channelname, observablesStringVec) );
    }
    else{
-      cout << legend << funclegend << " cannot change these parameters once they have been defined " << endl;
+      if(verbose_) cout << legend << funclegend << " cannot change these parameters once they have been defined " << endl;
    }
 }
 
@@ -108,7 +108,7 @@ void ModelConfigurator::WriteCombinedWS(std::string filename){
    std::string funclegend = "WriteCombinedWS(std::string filename) - ";
 
    TFile* file = new TFile( filename.c_str() ,"RECREATE"); 
-   if ( file->IsOpen() ) cout << legend << funclegend << "File "<< filename <<" opened successfully" << endl;  
+   if ( file->IsOpen() ) if(verbose_) cout << legend << funclegend << "File "<< filename <<" opened successfully" << endl;  
    file->cd();
 
    //make sure that user defined RooFit functions are saved
@@ -116,7 +116,7 @@ void ModelConfigurator::WriteCombinedWS(std::string filename){
 
    file->WriteTObject(_CombinedWS);
    file->Close();
-   if ( file->IsOpen() ) cout << legend << funclegend << "combined workspace has been written to file " << filename << endl;
+   if ( file->IsOpen() ) if(verbose_) cout << legend << funclegend << "combined workspace has been written to file " << filename << endl;
 
 }
 
@@ -125,27 +125,27 @@ void ModelConfigurator::setChannelData(std::string channelname, RooDataSet* chan
    std::string funclegend = "setChannelData(std::string channelname, RooDataSet* _Datamap) - ";
 
    if ( find(_channelnames.begin(), _channelnames.end(), channelname) != _channelnames.end() ){
-      cout << legend << funclegend << "WARNING: replacing dataset for channel " << channelname << endl;
-      cout << legend << funclegend << "WARNING: dataset for channel will be used for calculations but will not be saved to the combined WorkSpace"<< endl; 
+      if(verbose_) cout << legend << funclegend << "WARNING: replacing dataset for channel " << channelname << endl;
+      if(verbose_) cout << legend << funclegend << "WARNING: dataset for channel will be used for calculations but will not be saved to the combined WorkSpace"<< endl; 
       //FIXME: not saving to the WS might not be the desired solution?
       RooDataSet * temppointer = _Datamap.find(channelname)->second;
       _Datamap.find(channelname)->second = channeldata;
       delete temppointer;
    }
    else{
-      cout << legend << funclegend << "ERROR: channel " << channelname << " not contained in the model" << endl;
+      if(verbose_) cout << legend << funclegend << "ERROR: channel " << channelname << " not contained in the model" << endl;
    }
 };
 
 void ModelConfigurator::setVar(std::string name, double value){
    std::string funclegend = "ModelConfigurator::setVar(std:::string name, double value) - ";
-   cout << legend << funclegend << "WARNING: manually adjusting value of variable "<< name << " from " << _CombinedWS->var(name.c_str())->getVal() << " to " << value << endl;
+   if(verbose_) cout << legend << funclegend << "WARNING: manually adjusting value of variable "<< name << " from " << _CombinedWS->var(name.c_str())->getVal() << " to " << value << endl;
    _CombinedWS->var(name.c_str())->setVal(value);
 }
 
 void ModelConfigurator::setVarRange(std::string name, double valuelow, double valuehigh){
    std::string funclegend = "ModelConfigurator::setVarRange(std::string name, double valuelow, double valuehigh) - ";
-   cout << legend << funclegend << "WARNING: manually adjusting range of variable " << name << " to " << valuelow << " .. " << valuehigh << endl;
+   if(verbose_) cout << legend << funclegend << "WARNING: manually adjusting range of variable " << name << " to " << valuelow << " .. " << valuehigh << endl;
    _CombinedWS->Print();
    std::cout <<"getting var"<<std::endl;
    _CombinedWS->var(name.c_str())->setRange(valuelow, valuehigh);
