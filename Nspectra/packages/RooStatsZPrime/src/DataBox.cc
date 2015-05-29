@@ -247,7 +247,7 @@ RooDataSet * DataBox::createPeData(){
       
       _DatamapToy.insert( pair<string, RooDataSet *>((*nameit), toydata) );
       
-      Int_t n_generated_entries = (Int_t)(toydata->sumEntries());
+      //Int_t n_generated_entries = (Int_t)(toydata->sumEntries());
       
       // debug
       //std::cout << "!!!!!!!!!!!!!! _n      = " << nchannel    << std::endl;

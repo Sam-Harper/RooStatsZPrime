@@ -23,7 +23,7 @@ using namespace RooFit;
 
 
 //Constructor
-ModelConfiguratorZprime::ModelConfiguratorZprime( std::map<string, RooWorkspace*> WSmap ) : sublegend("Zprime - "), ModelConfigurator(WSmap) {
+ModelConfiguratorZprime::ModelConfiguratorZprime( std::map<string, RooWorkspace*> WSmap ) : ModelConfigurator(WSmap),sublegend("Zprime - ") {
    _peak = 1000.;
 }
 

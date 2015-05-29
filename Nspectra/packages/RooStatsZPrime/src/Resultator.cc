@@ -574,7 +574,8 @@ std::pair<Double_t, Double_t> Resultator::get_pllr_max( Double_t mass_low,
 
   _myWS->var("peak")->setConstant(kFALSE);
   //CONVENTION: likelihood of combined model is ahrdcoded as "model"
-  RooFitResult * _fit = _myWS->pdf("model")->fitTo(*data,Save());
+  //  RooFitResult * _fit = 
+  _myWS->pdf("model")->fitTo(*data,Save());
   //RooFitResult * _fit = 0;
   _max_mass =_myWS->var("peak")->getVal();
 
@@ -664,7 +665,8 @@ void Resultator::makeMcmcPosteriorPlot( MCMCInterval * mcInt, std::string filena
 
    TFile* outfile = new TFile(_plotfile.c_str(),"RECREATE");
    //outfile->cd();
-   TH1D* myhist = new TH1D("testhist","testhist",200, 0.9, 1.1); //histogram for storing information from special tests
+   //TH1D* myhist = 
+   new TH1D("testhist","testhist",200, 0.9, 1.1); //histogram for storing information from special tests
 
    std::string p0name = "width_p0"; //Comment: unfortunately hardcoded
    //p0name += "_";
