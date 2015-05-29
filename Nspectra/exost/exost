@@ -140,6 +140,13 @@ ws.Print()
 # save Workspace to file
 ws.SaveAs(chanName+"_workspace.root")
 
+#clean up after ourselfs
+
+import glob
+import os
+for tempFile in glob.glob("RooCFAuto*"):
+    os.remove(tempFile)
+
 
 
 ###########################
