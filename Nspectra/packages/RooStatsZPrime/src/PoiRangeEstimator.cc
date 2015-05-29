@@ -4,7 +4,7 @@
 // project started: April 2012
 // 
 
-#include "PoiRangeEstimator.hh"
+#include "RooStatsZPrime/PoiRangeEstimator.hh"
 #include "TStopwatch.h"
 #include <cmath>
 #include <sstream>

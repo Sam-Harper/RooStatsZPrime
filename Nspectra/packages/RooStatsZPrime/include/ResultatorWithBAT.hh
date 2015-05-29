@@ -12,10 +12,10 @@
 #include<string>
 #include<map>
 
-#include "ModelConfiguratorZprime.hh"
-#include "DataBox.hh"
-#include "DataPruner.hh"
-#include "Resultator.hh"
+#include "RooStatsZPrime/ModelConfiguratorZprime.hh"
+#include "RooStatsZPrime/DataBox.hh"
+#include "RooStatsZPrime/DataPruner.hh"
+#include "RooStatsZPrime/Resultator.hh"
 
 #include "RooWorkspace.h"
 #include "RooStats/ModelConfig.h"

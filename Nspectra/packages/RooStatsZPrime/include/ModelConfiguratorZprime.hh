@@ -13,7 +13,7 @@
 #include<map>
 
 #include "RooWorkspace.h"
-#include "ModelConfigurator.hh"
+#include "RooStatsZPrime/ModelConfigurator.hh"
 
 using namespace RooFit;
 //using namespace RooStats;

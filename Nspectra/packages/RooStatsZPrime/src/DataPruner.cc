@@ -4,7 +4,7 @@
 // project started: April 2012
 // 
 
-#include "DataPruner.hh"
+#include "RooStatsZPrime/DataPruner.hh"
 #include "TStopwatch.h"
 #include <cmath>
 #include <sstream>

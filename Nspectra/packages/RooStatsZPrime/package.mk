@@ -1,6 +1,6 @@
 PKG_OBJ_DIR=$(OBJ_DIR)/RooStatsZPrime/src
 
-ROOSTATSZPRIME_LIBFILES        =$(PKG_OBJ_DIR)/DataBox.o $(PKG_OBJ_DIR)/DataPruner.o $(PKG_OBJ_DIR)/ModelConfigurator.o $(PKG_OBJ_DIR)/ModelConfiguratorZprime.o $(PKG_OBJ_DIR)/Pixie.o $(PKG_OBJ_DIR)/PoiRangeEstimator.o $(PKG_OBJ_DIR)/Resultator.o $(PKG_OBJ_DIR)/ResultatorWithBAT.o 
+ROOSTATSZPRIME_LIBFILES        =$(PKG_OBJ_DIR)/DataBox.o $(PKG_OBJ_DIR)/DataPruner.o $(PKG_OBJ_DIR)/ModelConfigurator.o $(PKG_OBJ_DIR)/ModelConfiguratorZprime.o $(PKG_OBJ_DIR)/Pixie.o $(PKG_OBJ_DIR)/PoiRangeEstimator.o $(PKG_OBJ_DIR)/Resultator.o
 
 ROOSTATSZPRIME_LIBNAME 	= $(LIB_DIR)/libRooStatsZPrime.so
 

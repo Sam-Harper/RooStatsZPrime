@@ -12,8 +12,8 @@
 #include<string>
 #include<map>
 
-#include "ModelConfiguratorZprime.hh"
-#include "DataPruner.hh"
+#include "RooStatsZPrime/ModelConfiguratorZprime.hh"
+#include "RooStatsZPrime/DataPruner.hh"
 
 #include "TRandom3.h"
 #include "RooWorkspace.h"

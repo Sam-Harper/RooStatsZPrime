@@ -14,9 +14,9 @@
 
 #include "TFile.h"
 
-#include "ModelConfiguratorZprime.hh"
-#include "DataBox.hh"
-#include "DataPruner.hh"
+#include "RooStatsZPrime/ModelConfiguratorZprime.hh"
+#include "RooStatsZPrime/DataBox.hh"
+#include "RooStatsZPrime/DataPruner.hh"
 
 #include "RooWorkspace.h"
 #include "RooStats/ModelConfig.h"

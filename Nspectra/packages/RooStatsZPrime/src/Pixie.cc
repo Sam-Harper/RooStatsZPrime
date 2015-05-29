@@ -4,7 +4,7 @@
 // project started: April 2012
 // 
 
-#include "Pixie.hh"
+#include "RooStatsZPrime/Pixie.hh"
 #include <cmath>
 #include <sstream>
 #include <algorithm>

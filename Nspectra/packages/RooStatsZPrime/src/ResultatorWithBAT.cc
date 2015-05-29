@@ -4,7 +4,7 @@
 // project started: April 2012
 // 
 
-#include "ResultatorWithBAT.hh"
+#include "RooStatsZPrime/ResultatorWithBAT.hh"
 #include "TStopwatch.h"
 #include <cmath>
 #include <sstream>

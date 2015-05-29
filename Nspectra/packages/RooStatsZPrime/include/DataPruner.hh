@@ -12,7 +12,7 @@
 #include<string>
 #include<map>
 
-#include "ModelConfiguratorZprime.hh"
+#include "RooStatsZPrime/ModelConfiguratorZprime.hh"
 
 #include "RooWorkspace.h"
 #include "RooStats/ModelConfig.h"

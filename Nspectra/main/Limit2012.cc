@@ -7,11 +7,11 @@
 #include "RooWorkspace.h"
 #include "TFile.h"
 
-#include "ModelConfiguratorZprime.hh"
-#include "Resultator.hh"
-#include "PoiRangeEstimator.hh"
-#include "DataPruner.hh"
-#include "Pixie.hh"
+#include "RooStatsZPrime/ModelConfiguratorZprime.hh"
+#include "RooStatsZPrime/Resultator.hh"
+#include "RooStatsZPrime/PoiRangeEstimator.hh"
+#include "RooStatsZPrime/DataPruner.hh"
+#include "RooStatsZPrime/Pixie.hh"
 //#include <libconfig.hh>
 
 #include "RooRealVar.h"

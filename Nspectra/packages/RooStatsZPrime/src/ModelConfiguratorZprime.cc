@@ -4,7 +4,7 @@
 // project started: April 2012
 // 
 
-#include "ModelConfiguratorZprime.hh"
+#include "RooStatsZPrime/ModelConfiguratorZprime.hh"
 
 #include <cmath>
 #include <sstream>

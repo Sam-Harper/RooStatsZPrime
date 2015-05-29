@@ -4,7 +4,7 @@
 // project started: April 2012
 // 
 
-#include "ModelConfigurator.hh"
+#include "RooStatsZPrime/ModelConfigurator.hh"
 #include <cmath>
 #include <sstream>
 #include <algorithm>

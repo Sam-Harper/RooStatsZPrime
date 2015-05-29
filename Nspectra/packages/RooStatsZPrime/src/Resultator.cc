@@ -4,7 +4,7 @@
 // project started: April 2012
 // 
 
-#include "Resultator.hh"
+#include "RooStatsZPrime/Resultator.hh"
 #include "TStopwatch.h"
 #include <cmath>
 #include <sstream>
@@ -30,7 +30,7 @@
 #include "RooPlot.h"
 #include "RooVoigtian.h"
 #include "RooSimultaneous.h"
-#include "PoiRangeEstimator.hh"
+#include "RooStatsZPrime/PoiRangeEstimator.hh"
 
 using namespace std;
 using namespace RooFit;

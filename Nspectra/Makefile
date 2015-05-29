@@ -77,7 +77,7 @@ CXX           = g++
 ifeq ($(DEBUG),1)
 CXXFLAGS      = -fPIC -Wall -g -O  -Werror  -Wfatal-errors
 else
-CXXFLAGS      = -fPIC -Wall -O2 -Werror -Wfatal-errors
+CXXFLAGS      = -fPIC -Wall -O2 -Wfatal-errors #-Werror
 
 endif
 LD            = g++

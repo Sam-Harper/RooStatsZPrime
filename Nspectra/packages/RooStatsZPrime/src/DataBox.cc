@@ -4,7 +4,7 @@
 // project started: April 2012
 // 
 
-#include "DataBox.hh"
+#include "RooStatsZPrime/DataBox.hh"
 
 #include "TStopwatch.h"
 #include <cmath>

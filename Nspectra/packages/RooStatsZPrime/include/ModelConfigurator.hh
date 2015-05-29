@@ -7,7 +7,7 @@
 
 #define MODELCONFIGURATOR_hh
 
-#include "Pixie.hh"
+#include "RooStatsZPrime/Pixie.hh"
 
 #include<vector>
 #include<string>
