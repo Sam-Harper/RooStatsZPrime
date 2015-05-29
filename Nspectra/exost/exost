@@ -31,8 +31,8 @@ if 'ROOT_INCLUDE' not in os.environ.keys():
 
 gSystem.AddIncludePath("-Iuserfuncs")
 from ROOT import gROOT
-gROOT.ProcessLine(".L userfuncs/ZPrimeBkgPdf.cxx+")
-gROOT.ProcessLine(".L userfuncs/ZPrimeVoigtian.cxx+")
+gROOT.ProcessLine(".L exost/userfuncs/ZPrimeBkgPdf.cxx+")
+gROOT.ProcessLine(".L exost/userfuncs/ZPrimeVoigtian.cxx+")
 # parse command line parameters
 import exostCommandLineParser
 clparser = exostCommandLineParser.exostCLParser()
